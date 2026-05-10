@@ -1,0 +1,8 @@
+{
+  "name": "CifraPro",
+  "short_name": "CifraPro",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#1a1a2e",
+  "background_color": "#0f0f1a"
+}

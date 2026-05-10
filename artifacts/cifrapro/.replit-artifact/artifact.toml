@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "CifraPro"
+version = "1.0.0"
+id = "artifacts/cifrapro"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22851
+
+[services.development]
+run = "pnpm --filter @workspace/cifrapro run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/cifrapro", "run", "build" ]
+publicDir = "artifacts/cifrapro/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22851"
+BASE_PATH = "/"

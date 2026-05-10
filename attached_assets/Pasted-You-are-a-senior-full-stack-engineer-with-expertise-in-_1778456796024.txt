@@ -1,0 +1,166 @@
+You are a senior full-stack engineer with expertise in React, TypeScript, Tailwind CSS, 
+and PWA development. Your task is to build a complete, production-ready web application 
+called "CifraPro" — a chord/sheet music manager designed for musicians.
+
+---
+
+## PROJECT STRUCTURE & DEPLOYMENT
+
+- Framework: React + TypeScript + Vite
+- Styling: Tailwind CSS
+- State management: Zustand (persisted with localStorage)
+- Routing: React Router v6
+- Deployment target: Vercel (ensure vercel.json is present)
+- The app must be a PWA (include manifest.json and service worker via vite-plugin-pwa)
+- Package manager: npm
+
+Required config files:
+- package.json (with all dependencies)
+- vite.config.ts (with PWA plugin configured)
+- vercel.json (SPA rewrites: {"rewrites": [{"source": "/(.*)", "destination": "/"}]})
+- tsconfig.json
+- tailwind.config.ts
+- index.html (with correct meta tags, viewport, and PWA links)
+- public/manifest.json (name: CifraPro, short_name: CifraPro, theme_color: #1a1a2e)
+
+All files must be GitHub-push and Vercel-deploy ready from day one.
+
+---
+
+## LANGUAGE & DESIGN
+
+- 100% Brazilian Portuguese UI — every label, button, toast, placeholder, tooltip
+- Design: minimalist, clean, mobile-first
+- Color palette: dark mode base (#0f0f1a background, #1e1e2e cards), accent #6c63ff (soft purple), 
+  text #e0e0e0
+- Typography: use Google Fonts — "Instrument Sans" for body, "Playfair Display" for headings
+- Fully responsive: optimized for mobile (360px+), tablet (768px+), desktop (1280px+)
+- Bottom navigation bar on mobile; sidebar on desktop
+- No clutter — only functional, used components
+
+---
+
+## CORE FEATURES
+
+### 1. CIFRAS (Chord Charts)
+- Create cifra with fields: title, artist, key (tom), lyrics + chords inline (plain text editor)
+- Import cifra from .txt file (file input button)
+- Edit cifra (title, artist, key, full content)
+- Delete cifra (with confirmation modal)
+- View cifra in full-screen reading mode with large, legible font
+
+### 2. TRANSPOSIÇÃO DE TOM (Transpose)
+- In the cifra view, show current key (tom) with two buttons: ▲ (subir) and ▼ (baixar)
+- Each press shifts all chords in the content up or down by one semitone
+- Support all standard chord notations: C, D, E, F, G, A, B and their sharps/flats (#/b)
+- Also support Portuguese notation if present (Dó, Ré, Mi, etc.) — map to standard
+- Display current key prominently during transposition
+
+### 3. HINÁRIOS (Songbooks)
+- Create named hinários (e.g., "Hinário 1 – Louvor", "Hinário Cristã")
+- Add existing cifras to a hinário (multi-select from cifra list)
+- Remove cifras from a hinário
+- Delete hinário (with confirmation)
+- View hinário — shows list of its cifras in order; tap to open cifra
+
+### 4. BUSCA (Search)
+- Global search bar in header/top bar
+- Searches across cifra titles and artists in real time (debounced, 300ms)
+- Also searches hinário names
+- Results grouped by type (Cifras / Hinários) with icons
+
+### 5. ROLAGEM AUTOMÁTICA (Auto-Scroll)
+- Available in full-screen cifra reading mode
+- Button to start/pause auto-scroll
+- Speed slider: slow / medium / fast (3 presets)
+- Auto-scroll pauses when user touches/scrolls manually; resumes after 2s
+
+### 6. PERFIL & BACKUP
+- Profile screen: user sets their name and profile photo (stored locally)
+- Backup: serialize all app data (cifras + hinários) to a JSON string
+- Generate a shareable link using base64 encoding of the JSON: 
+  format → https://[app-url]/import?data=[base64]
+- Import: if URL contains ?data= param on load, decode and merge data into local state
+  (show confirmation modal before importing: "Deseja importar X cifras e Y hinários?")
+- Also offer raw JSON download as .json file
+
+---
+
+## APP ARCHITECTURE
+
+src/
+├── components/
+│   ├── Layout.tsx          # Shell with nav (bottom on mobile, sidebar on desktop)
+│   ├── Navbar.tsx
+│   ├── SearchBar.tsx
+│   └── Modal.tsx           # Reusable confirmation/generic modal
+├── pages/
+│   ├── Home.tsx            # Recent cifras + quick access
+│   ├── Cifras.tsx          # List all cifras
+│   ├── CifraDetail.tsx     # Full-screen view + transpose + auto-scroll
+│   ├── CifraEditor.tsx     # Create/edit cifra
+│   ├── Hinarios.tsx        # List all hinários
+│   ├── HinarioDetail.tsx   # View a hinário's cifras
+│   ├── Busca.tsx           # Search results
+│   └── Perfil.tsx          # Profile + backup/import
+├── store/
+│   └── useAppStore.ts      # Zustand store with persist middleware
+├── utils/
+│   ├── transpose.ts        # Chord transposition logic
+│   └── backup.ts           # Encode/decode backup data
+├── types/
+│   └── index.ts            # TypeScript interfaces: Cifra, Hinario, UserProfile
+└── main.tsx
+
+---
+
+## DATA MODELS (TypeScript)
+
+interface Cifra {
+  id: string;           // uuid
+  title: string;
+  artist: string;
+  key: string;          // e.g. "C", "G#", "Bb"
+  content: string;      // full chord+lyric text
+  createdAt: number;
+  updatedAt: number;
+}
+
+interface Hinario {
+  id: string;
+  name: string;
+  cifraIds: string[];
+  createdAt: number;
+}
+
+interface UserProfile {
+  name: string;
+  photoUrl: string | null;   // base64 data URL
+}
+
+---
+
+## TRANSPOSITION LOGIC (transpose.ts)
+
+- Define chromatic scale: ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"]
+- Define flat equivalents map: {"Db":"C#", "Eb":"D#", "Gb":"F#", "Ab":"G#", "Bb":"A#"}
+- Parse content text: find chord tokens (words matching /^[A-G][#b]?(m|maj|min|dim|aug|sus|add|\d)*/)
+- Shift each chord root by +1 or -1 semitone on the chromatic scale
+- Preserve chord quality (m, maj7, sus4, etc.)
+- Return transformed content string
+
+---
+
+## NON-NEGOTIABLES
+
+- Zero external UI libraries (no MUI, no Chakra, no shadcn) — pure Tailwind + custom components
+- No backend, no database — 100% client-side with localStorage persistence
+- App must work offline after first load (PWA service worker)
+- All interactive elements must have 48px minimum touch targets on mobile
+- Smooth page transitions (CSS fade or slide)
+- Toast notifications for all user actions (save, delete, import, export)
+- Empty states with helpful illustrated placeholders and CTA buttons
+
+Build the complete application. Start with the config files (package.json, vite.config.ts, 
+vercel.json, tailwind.config.ts, tsconfig.json), then the store, then utils, then pages.
+Do not skip any file. Do not use placeholder comments — write real, working code.

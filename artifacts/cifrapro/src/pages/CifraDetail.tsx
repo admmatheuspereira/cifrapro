@@ -1,0 +1,208 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useParams, useLocation } from "wouter";
+import { ArrowLeft, Edit2, Trash2, ArrowUp, ArrowDown, RotateCcw, Play, Pause } from "lucide-react";
+import { toast } from "sonner";
+import { useAppStore } from "../store/useAppStore";
+import { transposeContent, transposeKey } from "../utils/transpose";
+import { Button } from "../components/ui/button";
+import { Modal } from "../components/Modal";
+
+export default function CifraDetail() {
+  const params = useParams();
+  const [, setLocation] = useLocation();
+  const { cifras, deleteCifra } = useAppStore();
+  
+  const cifraId = params.id as string;
+  const cifra = cifras.find(c => c.id === cifraId);
+
+  const [semitones, setSemitones] = useState(0);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  
+  // Auto-scroll state
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [scrollSpeed, setScrollSpeed] = useState<0.3 | 0.7 | 1.5>(0.7);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const animationRef = useRef<number | null>(null);
+  const scrollPauseTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Redirect if not found
+  useEffect(() => {
+    if (!cifra && !showDeleteModal) {
+      setLocation("/cifras");
+    }
+  }, [cifra, setLocation, showDeleteModal]);
+
+  // Cleanup auto-scroll on unmount
+  useEffect(() => {
+    return () => {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      if (scrollPauseTimerRef.current) clearTimeout(scrollPauseTimerRef.current);
+    };
+  }, []);
+
+  const startScrolling = useCallback(() => {
+    if (!scrollContainerRef.current || !isScrolling) return;
+    
+    scrollContainerRef.current.scrollTop += scrollSpeed;
+    animationRef.current = requestAnimationFrame(startScrolling);
+  }, [isScrolling, scrollSpeed]);
+
+  useEffect(() => {
+    if (isScrolling) {
+      animationRef.current = requestAnimationFrame(startScrolling);
+    } else if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+    
+    return () => {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    };
+  }, [isScrolling, startScrolling]);
+
+  const handleUserScroll = useCallback(() => {
+    if (!isScrolling) return;
+    
+    // Pause briefly
+    if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    
+    if (scrollPauseTimerRef.current) clearTimeout(scrollPauseTimerRef.current);
+    scrollPauseTimerRef.current = setTimeout(() => {
+      if (isScrolling) {
+        animationRef.current = requestAnimationFrame(startScrolling);
+      }
+    }, 2000);
+  }, [isScrolling, startScrolling]);
+
+  if (!cifra) return null;
+
+  const currentKey = transposeKey(cifra.key, semitones);
+  const currentContent = semitones !== 0 ? transposeContent(cifra.content, semitones) : cifra.content;
+
+  const handleDelete = () => {
+    deleteCifra(cifra.id);
+    toast.success("Cifra excluída!");
+    setLocation("/cifras");
+  };
+
+  return (
+    <div className="flex flex-col h-[100dvh] w-full overflow-hidden bg-background">
+      {/* Top Toolbar */}
+      <header className="flex items-center justify-between p-2 border-b border-border bg-sidebar/80 backdrop-blur shrink-0 safe-top">
+        <Button variant="ghost" size="icon" onClick={() => setLocation("/cifras")} data-testid="button-cifra-back">
+          <ArrowLeft size={20} />
+        </Button>
+        <div className="flex gap-1">
+          <Button variant="ghost" size="icon" onClick={() => setLocation(`/cifras/${cifra.id}/editar`)} data-testid="button-cifra-edit">
+            <Edit2 size={18} />
+          </Button>
+          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => setShowDeleteModal(true)} data-testid="button-cifra-delete">
+            <Trash2 size={18} />
+          </Button>
+        </div>
+      </header>
+
+      {/* Main Content Scrollable Area */}
+      <div 
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto w-full"
+        onTouchStart={handleUserScroll}
+        onWheel={handleUserScroll}
+      >
+        <div className="p-4 md:p-8 max-w-4xl mx-auto pb-32">
+          <div className="mb-8">
+            <h1 className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-2">{cifra.title}</h1>
+            <p className="text-lg text-muted-foreground">{cifra.artist}</p>
+          </div>
+          
+          <div className="font-mono text-base md:text-lg leading-relaxed whitespace-pre-wrap">
+            {currentContent}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Floating Control Bar */}
+      <div className="fixed bottom-0 left-0 right-0 md:left-[220px] bg-sidebar/95 backdrop-blur border-t border-border p-3 safe-bottom z-40">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row gap-4 justify-between items-center">
+          
+          {/* Transpose Controls */}
+          <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-1.5 w-full sm:w-auto">
+            <div className="px-3 flex items-center justify-center min-w-[60px] font-medium text-primary">
+              {currentKey || '?'}
+              {semitones !== 0 && (
+                <span className="text-xs text-muted-foreground ml-1">
+                  ({semitones > 0 ? '+' : ''}{semitones})
+                </span>
+              )}
+            </div>
+            <div className="w-px h-6 bg-border mx-1" />
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSemitones(s => s - 1)} data-testid="button-transpose-down">
+              <ArrowDown size={16} />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSemitones(s => s + 1)} data-testid="button-transpose-up">
+              <ArrowUp size={16} />
+            </Button>
+            <div className="w-px h-6 bg-border mx-1" />
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSemitones(0)} disabled={semitones === 0} data-testid="button-transpose-reset">
+              <RotateCcw size={14} />
+            </Button>
+          </div>
+
+          {/* Auto-scroll Controls */}
+          <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-1.5 w-full sm:w-auto">
+            <Button 
+              variant={isScrolling ? "default" : "secondary"} 
+              className="h-8 px-4 font-medium" 
+              onClick={() => setIsScrolling(!isScrolling)}
+              data-testid="button-autoscroll-toggle"
+            >
+              {isScrolling ? <Pause size={16} className="mr-1" /> : <Play size={16} className="mr-1" />}
+              Rolagem
+            </Button>
+            <div className="w-px h-6 bg-border mx-1" />
+            <div className="flex gap-1">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className={`h-8 text-xs px-2 ${scrollSpeed === 0.3 ? 'bg-background shadow-sm' : ''}`}
+                onClick={() => setScrollSpeed(0.3)}
+                data-testid="button-autoscroll-slow"
+              >
+                1x
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className={`h-8 text-xs px-2 ${scrollSpeed === 0.7 ? 'bg-background shadow-sm' : ''}`}
+                onClick={() => setScrollSpeed(0.7)}
+                data-testid="button-autoscroll-med"
+              >
+                2x
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className={`h-8 text-xs px-2 ${scrollSpeed === 1.5 ? 'bg-background shadow-sm' : ''}`}
+                onClick={() => setScrollSpeed(1.5)}
+                data-testid="button-autoscroll-fast"
+              >
+                3x
+              </Button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Excluir Cifra"
+        onConfirm={handleDelete}
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+      >
+        <p className="text-muted-foreground">Tem certeza que deseja excluir esta cifra? Esta ação não pode ser desfeita.</p>
+      </Modal>
+    </div>
+  );
+}

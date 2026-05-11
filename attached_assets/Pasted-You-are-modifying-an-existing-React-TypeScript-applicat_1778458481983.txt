@@ -1,0 +1,156 @@
+You are modifying an existing React + TypeScript application called CifraPro.
+Do NOT rewrite the entire app. Add ONLY the key detection feature described below.
+
+---
+
+## STEP 1 — Create new file: src/utils/detectKey.ts
+
+import { CHROMATIC_SCALE, FLAT_MAP } from "./transpose";
+
+// Major scale intervals from root (semitones)
+const MAJOR_SCALE_INTERVALS = [0, 2, 4, 5, 7, 9, 11];
+
+// Normalize flat notes to sharp equivalents
+const normalizeNote = (note: string): string => FLAT_MAP[note] || note;
+
+// Extract all chord root notes from content text
+const extractChordRoots = (content: string): string[] => {
+  const chordRegex = /\b([A-G][#b]?)(m|maj|min|dim|aug|sus|add|\d+)*\b/g;
+  const roots: string[] = [];
+  let match;
+  while ((match = chordRegex.exec(content)) !== null) {
+    const normalized = normalizeNote(match[1]);
+    if (CHROMATIC_SCALE.includes(normalized)) {
+      roots.push(normalized);
+    }
+  }
+  return roots;
+};
+
+// Build frequency map of chord roots
+const buildFrequencyMap = (roots: string[]): Record<string, number> => {
+  return roots.reduce((map, note) => {
+    map[note] = (map[note] || 0) + 1;
+    return map;
+  }, {} as Record<string, number>);
+};
+
+// Get the 7 diatonic notes of a major key
+const getDiatonicNotes = (rootIndex: number): string[] => {
+  return MAJOR_SCALE_INTERVALS.map(
+    (interval) => CHROMATIC_SCALE[(rootIndex + interval) % 12]
+  );
+};
+
+export const detectKey = (content: string): string | null => {
+  const roots = extractChordRoots(content);
+  if (roots.length === 0) return null;
+
+  const freqMap = buildFrequencyMap(roots);
+  let bestKey: string | null = null;
+  let bestScore = -Infinity;
+
+  CHROMATIC_SCALE.forEach((note, rootIndex) => {
+    const diatonic = new Set(getDiatonicNotes(rootIndex));
+    let score = 0;
+
+    for (const [chord, count] of Object.entries(freqMap)) {
+      if (diatonic.has(chord)) {
+        score += count; // reward in-scale chords
+      } else {
+        score -= count * 0.5; // penalize out-of-scale chords
+      }
+    }
+
+    // Tiebreaker: prefer key whose tonic appears most
+    if (
+      score > bestScore ||
+      (score === bestScore && (freqMap[note] || 0) > (freqMap[bestKey || ""] || 0))
+    ) {
+      bestScore = score;
+      bestKey = note;
+    }
+  });
+
+  return bestKey;
+};
+
+---
+
+## STEP 2 — Modify ONLY src/pages/CifraEditor.tsx
+
+Make the following targeted changes. Do not alter any other logic, styling, or imports 
+that already exist.
+
+### 2a. Add import at the top (after existing imports):
+import { detectKey } from "../utils/detectKey";
+
+### 2b. Add a new state variable (after existing useState declarations):
+const [keyAutoDetected, setKeyAutoDetected] = useState(false);
+const [manuallyEdited, setManuallyEdited] = useState(false);
+
+### 2c. Add a useEffect for auto-detection (after existing useEffect):
+useEffect(() => {
+  if (manuallyEdited) return;
+  if (!content.trim()) return;
+
+  const timer = setTimeout(() => {
+    const detected = detectKey(content);
+    if (detected) {
+      setKey(detected);
+      setKeyAutoDetected(true);
+    } else {
+      setKeyAutoDetected(false);
+    }
+  }, 800);
+
+  return () => clearTimeout(timer);
+}, [content, manuallyEdited]);
+
+### 2d. Update handleFileUpload — after setContent(text), add:
+setManuallyEdited(false);
+setKeyAutoDetected(false);
+
+### 2e. Wrap the existing Select with a relative div, and add the badge below it.
+Replace the existing <div className="space-y-2"> block that contains the Tom field 
+with this:
+
+<div className="space-y-2">
+  <Label htmlFor="key" className="flex items-center gap-2">
+    Tom Original
+    {keyAutoDetected && !manuallyEdited && (
+      <span className="text-xs text-muted-foreground italic font-normal">
+        🎵 Detectado automaticamente
+      </span>
+    )}
+  </Label>
+  <Select
+    value={key}
+    onValueChange={(val) => {
+      setKey(val);
+      setManuallyEdited(true);
+      setKeyAutoDetected(false);
+    }}
+  >
+    <SelectTrigger id="key" className="bg-card min-h-[48px]" data-testid="select-editor-key">
+      <SelectValue placeholder="Selecione o tom" />
+    </SelectTrigger>
+    <SelectContent>
+      {CHROMATIC_SCALE.map((note) => (
+        <SelectItem key={note} value={note} data-testid={`select-option-${note}`}>
+          {note}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+</div>
+
+---
+
+## WHAT NOT TO TOUCH
+
+- Do not modify transpose.ts
+- Do not modify useAppStore.ts
+- Do not modify any other page or component
+- Do not change any existing styling, routing, or toast logic
+- Do not add any new dependencies

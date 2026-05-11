@@ -18,4 +18,5 @@ export interface Hinario {
 export interface UserProfile {
   name: string;
   photoUrl: string | null;
+  theme: "dark" | "light";
 }

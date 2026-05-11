@@ -11,19 +11,23 @@ export default function CifraDetail() {
   const params = useParams();
   const [, setLocation] = useLocation();
   const { cifras, deleteCifra } = useAppStore();
-  
+
   const cifraId = params.id as string;
   const cifra = cifras.find(c => c.id === cifraId);
 
   const [semitones, setSemitones] = useState(0);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  
+
   // Auto-scroll state
   const [isScrolling, setIsScrolling] = useState(false);
-  const [scrollSpeed, setScrollSpeed] = useState<0.3 | 0.7 | 1.5>(0.7);
+  const [scrollSpeed, setScrollSpeed] = useState<1 | 2 | 3>(1);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | null>(null);
   const scrollPauseTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const scrollAccRef = useRef(0);
+
+  // Map speed levels to px/frame values
+  const speedPxMap: Record<number, number> = { 1: 0.4, 2: 0.9, 3: 1.8 };
 
   // Redirect if not found
   useEffect(() => {
@@ -42,18 +46,27 @@ export default function CifraDetail() {
 
   const startScrolling = useCallback(() => {
     if (!scrollContainerRef.current || !isScrolling) return;
-    
-    scrollContainerRef.current.scrollTop += scrollSpeed;
+
+    const pxPerFrame = speedPxMap[scrollSpeed] ?? 0.4;
+    scrollAccRef.current += pxPerFrame;
+
+    if (scrollAccRef.current >= 1) {
+      const toScroll = Math.floor(scrollAccRef.current);
+      scrollContainerRef.current.scrollTop += toScroll;
+      scrollAccRef.current -= toScroll;
+    }
+
     animationRef.current = requestAnimationFrame(startScrolling);
   }, [isScrolling, scrollSpeed]);
 
   useEffect(() => {
+    scrollAccRef.current = 0;
     if (isScrolling) {
       animationRef.current = requestAnimationFrame(startScrolling);
     } else if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
     }
-    
+
     return () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
@@ -61,13 +74,13 @@ export default function CifraDetail() {
 
   const handleUserScroll = useCallback(() => {
     if (!isScrolling) return;
-    
-    // Pause briefly
+
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    
+
     if (scrollPauseTimerRef.current) clearTimeout(scrollPauseTimerRef.current);
     scrollPauseTimerRef.current = setTimeout(() => {
       if (isScrolling) {
+        scrollAccRef.current = 0;
         animationRef.current = requestAnimationFrame(startScrolling);
       }
     }, 2000);
@@ -102,7 +115,7 @@ export default function CifraDetail() {
       </header>
 
       {/* Main Content Scrollable Area */}
-      <div 
+      <div
         ref={scrollContainerRef}
         className="flex-1 overflow-y-auto w-full"
         onTouchStart={handleUserScroll}
@@ -111,9 +124,9 @@ export default function CifraDetail() {
         <div className="p-4 md:p-8 max-w-4xl mx-auto pb-32">
           <div className="mb-8">
             <h1 className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-2">{cifra.title}</h1>
-            <p className="text-lg text-muted-foreground">{cifra.artist}</p>
+            {cifra.artist && <p className="text-lg text-muted-foreground">{cifra.artist}</p>}
           </div>
-          
+
           <div className="font-mono text-base md:text-lg leading-relaxed whitespace-pre-wrap">
             {currentContent}
           </div>
@@ -123,7 +136,7 @@ export default function CifraDetail() {
       {/* Bottom Floating Control Bar */}
       <div className="fixed bottom-0 left-0 right-0 md:left-[220px] bg-sidebar/95 backdrop-blur border-t border-border p-3 safe-bottom z-40">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row gap-4 justify-between items-center">
-          
+
           {/* Transpose Controls */}
           <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-1.5 w-full sm:w-auto">
             <div className="px-3 flex items-center justify-center min-w-[60px] font-medium text-primary">
@@ -149,9 +162,9 @@ export default function CifraDetail() {
 
           {/* Auto-scroll Controls */}
           <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-1.5 w-full sm:w-auto">
-            <Button 
-              variant={isScrolling ? "default" : "secondary"} 
-              className="h-8 px-4 font-medium" 
+            <Button
+              variant={isScrolling ? "default" : "secondary"}
+              className="h-8 px-4 font-medium"
               onClick={() => setIsScrolling(!isScrolling)}
               data-testid="button-autoscroll-toggle"
             >
@@ -160,29 +173,29 @@ export default function CifraDetail() {
             </Button>
             <div className="w-px h-6 bg-border mx-1" />
             <div className="flex gap-1">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className={`h-8 text-xs px-2 ${scrollSpeed === 0.3 ? 'bg-background shadow-sm' : ''}`}
-                onClick={() => setScrollSpeed(0.3)}
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-8 text-xs px-2 ${scrollSpeed === 1 ? 'bg-background shadow-sm' : ''}`}
+                onClick={() => setScrollSpeed(1)}
                 data-testid="button-autoscroll-slow"
               >
                 1x
               </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className={`h-8 text-xs px-2 ${scrollSpeed === 0.7 ? 'bg-background shadow-sm' : ''}`}
-                onClick={() => setScrollSpeed(0.7)}
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-8 text-xs px-2 ${scrollSpeed === 2 ? 'bg-background shadow-sm' : ''}`}
+                onClick={() => setScrollSpeed(2)}
                 data-testid="button-autoscroll-med"
               >
                 2x
               </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className={`h-8 text-xs px-2 ${scrollSpeed === 1.5 ? 'bg-background shadow-sm' : ''}`}
-                onClick={() => setScrollSpeed(1.5)}
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-8 text-xs px-2 ${scrollSpeed === 3 ? 'bg-background shadow-sm' : ''}`}
+                onClick={() => setScrollSpeed(3)}
                 data-testid="button-autoscroll-fast"
               >
                 3x

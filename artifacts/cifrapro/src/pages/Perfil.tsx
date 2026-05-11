@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { User, Download, Upload, Share2, Save, Camera } from "lucide-react";
+import { User, Download, Upload, Share2, Save, Camera, Sun, Moon, AlertTriangle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { useLocation } from "wouter";
 import { useAppStore } from "../store/useAppStore";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -10,14 +9,14 @@ import { Modal } from "../components/Modal";
 import { generateShareLink, downloadJson, decodeBackup } from "../utils/backup";
 
 export default function Perfil() {
-  const { profile, updateProfile, cifras, hinarios, importData } = useAppStore();
-  const [location, setLocation] = useLocation();
-  
+  const { profile, updateProfile, cifras, hinarios, importData, resetAllData } = useAppStore();
+
   const [name, setName] = useState(profile.name);
   const [photoUrl, setPhotoUrl] = useState(profile.photoUrl);
-  
+
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [importPayload, setImportPayload] = useState<{cifras: any[], hinarios: any[]} | null>(null);
+  const [resetModalOpen, setResetModalOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dataInputRef = useRef<HTMLInputElement>(null);
@@ -26,7 +25,7 @@ export default function Perfil() {
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const dataParam = searchParams.get('data');
-    
+
     if (dataParam) {
       const decoded = decodeBackup(dataParam);
       if (decoded) {
@@ -35,8 +34,7 @@ export default function Perfil() {
       } else {
         toast.error("Link de compartilhamento inválido ou corrompido.");
       }
-      
-      // Clean URL
+
       const newUrl = window.location.pathname;
       window.history.replaceState({}, '', newUrl);
     }
@@ -70,7 +68,7 @@ export default function Perfil() {
       try {
         const text = event.target?.result as string;
         const parsed = JSON.parse(text);
-        
+
         if (Array.isArray(parsed.cifras) && Array.isArray(parsed.hinarios)) {
           setImportPayload({ cifras: parsed.cifras, hinarios: parsed.hinarios });
           setImportModalOpen(true);
@@ -82,7 +80,7 @@ export default function Perfil() {
       }
     };
     reader.readAsText(file);
-    
+
     if (dataInputRef.current) {
       dataInputRef.current.value = '';
     }
@@ -104,6 +102,18 @@ export default function Perfil() {
       .catch(() => toast.error("Erro ao copiar link."));
   };
 
+  const handleToggleTheme = () => {
+    const newTheme = profile.theme === "dark" ? "light" : "dark";
+    updateProfile({ theme: newTheme });
+    toast.success(newTheme === "dark" ? "Tema escuro ativado" : "Tema claro ativado");
+  };
+
+  const handleResetAll = () => {
+    resetAllData();
+    toast.success("Todos os dados foram apagados.");
+    setResetModalOpen(false);
+  };
+
   return (
     <div className="p-4 md:p-8 max-w-2xl mx-auto h-full flex flex-col">
       <header className="mb-8 mt-4">
@@ -111,13 +121,14 @@ export default function Perfil() {
         <p className="text-muted-foreground mt-1">Gerencie sua conta e seus dados</p>
       </header>
 
-      <div className="space-y-8 pb-24 md:pb-4">
+      <div className="space-y-6 pb-24 md:pb-8">
+        {/* Personal Info */}
         <section className="bg-card border border-border rounded-xl p-6">
-          <h2 className="text-xl font-semibold mb-6">Informações Pessoais</h2>
-          
+          <h2 className="text-lg font-semibold mb-5">Informações Pessoais</h2>
+
           <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center mb-6">
             <div className="relative group">
-              <div 
+              <div
                 className="w-24 h-24 rounded-full bg-muted border-2 border-border overflow-hidden flex items-center justify-center cursor-pointer relative"
                 onClick={() => fileInputRef.current?.click()}
                 data-testid="avatar-profile"
@@ -131,42 +142,79 @@ export default function Perfil() {
                   <Camera size={24} className="text-white" />
                 </div>
               </div>
-              <input 
-                type="file" 
-                accept="image/*" 
-                className="hidden" 
-                ref={fileInputRef} 
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                ref={fileInputRef}
                 onChange={handlePhotoUpload}
               />
             </div>
-            
+
             <div className="flex-1 w-full space-y-2">
               <Label htmlFor="name">Seu Nome</Label>
-              <Input 
-                id="name" 
-                value={name} 
-                onChange={(e) => setName(e.target.value)} 
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 placeholder="Ex: João Silva"
                 className="bg-background min-h-[48px]"
                 data-testid="input-profile-name"
               />
             </div>
           </div>
-          
+
           <Button onClick={handleSaveProfile} className="w-full sm:w-auto" data-testid="button-save-profile">
             <Save size={18} className="mr-2" />
             Salvar Alterações
           </Button>
         </section>
 
+        {/* Appearance */}
         <section className="bg-card border border-border rounded-xl p-6">
-          <h2 className="text-xl font-semibold mb-2">Backup & Sincronização</h2>
-          <p className="text-muted-foreground text-sm mb-6">
+          <h2 className="text-lg font-semibold mb-1">Aparência</h2>
+          <p className="text-muted-foreground text-sm mb-5">Escolha o tema do aplicativo</p>
+
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => profile.theme !== "light" && handleToggleTheme()}
+              className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                profile.theme === "light"
+                  ? "border-primary bg-primary/10"
+                  : "border-border hover:border-border/80 hover:bg-muted/50"
+              }`}
+            >
+              <Sun size={24} className={profile.theme === "light" ? "text-primary" : "text-muted-foreground"} />
+              <span className={`text-sm font-medium ${profile.theme === "light" ? "text-primary" : "text-muted-foreground"}`}>
+                Claro
+              </span>
+            </button>
+
+            <button
+              onClick={() => profile.theme !== "dark" && handleToggleTheme()}
+              className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                profile.theme === "dark"
+                  ? "border-primary bg-primary/10"
+                  : "border-border hover:border-border/80 hover:bg-muted/50"
+              }`}
+            >
+              <Moon size={24} className={profile.theme === "dark" ? "text-primary" : "text-muted-foreground"} />
+              <span className={`text-sm font-medium ${profile.theme === "dark" ? "text-primary" : "text-muted-foreground"}`}>
+                Escuro
+              </span>
+            </button>
+          </div>
+        </section>
+
+        {/* Backup */}
+        <section className="bg-card border border-border rounded-xl p-6">
+          <h2 className="text-lg font-semibold mb-1">Backup & Sincronização</h2>
+          <p className="text-muted-foreground text-sm mb-5">
             O CifraPro salva seus dados apenas neste dispositivo. Faça backups regularmente para não perder seu repertório.
           </p>
-          
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Button variant="outline" className="w-full h-14 justify-start px-4" onClick={() => downloadJson(cifras, hinarios)} data-testid="button-backup-download">
                 <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center mr-3 shrink-0">
                   <Download size={16} />
@@ -176,7 +224,7 @@ export default function Perfil() {
                   <div className="text-xs text-muted-foreground font-normal">Arquivo JSON</div>
                 </div>
               </Button>
-              
+
               <Button variant="outline" className="w-full h-14 justify-start px-4" onClick={() => dataInputRef.current?.click()} data-testid="button-backup-upload">
                 <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center mr-3 shrink-0">
                   <Upload size={16} />
@@ -186,11 +234,11 @@ export default function Perfil() {
                   <div className="text-xs text-muted-foreground font-normal">De arquivo JSON</div>
                 </div>
               </Button>
-              <input 
-                type="file" 
-                accept=".json" 
-                className="hidden" 
-                ref={dataInputRef} 
+              <input
+                type="file"
+                accept=".json"
+                className="hidden"
+                ref={dataInputRef}
                 onChange={handleDataImport}
                 data-testid="input-import-data"
               />
@@ -207,8 +255,35 @@ export default function Perfil() {
             </Button>
           </div>
         </section>
+
+        {/* Danger Zone */}
+        <section className="bg-card border-2 border-destructive/40 rounded-xl p-6">
+          <div className="flex items-center gap-2 mb-1">
+            <AlertTriangle size={18} className="text-destructive" />
+            <h2 className="text-lg font-semibold text-destructive">Zona de Perigo</h2>
+          </div>
+          <p className="text-muted-foreground text-sm mb-5">
+            Ações irreversíveis. Prossiga com cuidado.
+          </p>
+
+          <Button
+            variant="outline"
+            className="w-full h-14 justify-start px-4 border-destructive/50 hover:bg-destructive/10 hover:border-destructive text-destructive"
+            onClick={() => setResetModalOpen(true)}
+            data-testid="button-reset-all"
+          >
+            <div className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center mr-3 shrink-0">
+              <Trash2 size={16} className="text-destructive" />
+            </div>
+            <div className="text-left">
+              <div className="font-medium">Restaurar Aplicativo</div>
+              <div className="text-xs text-destructive/70 font-normal">Remove todas as cifras, hinários e perfil</div>
+            </div>
+          </Button>
+        </section>
       </div>
 
+      {/* Import Modal */}
       <Modal
         isOpen={importModalOpen}
         onClose={() => {
@@ -237,6 +312,25 @@ export default function Perfil() {
             </div>
           )}
           <p className="text-sm font-medium">Deseja prosseguir com a importação?</p>
+        </div>
+      </Modal>
+
+      {/* Reset Modal */}
+      <Modal
+        isOpen={resetModalOpen}
+        onClose={() => setResetModalOpen(false)}
+        title="Restaurar Aplicativo"
+        onConfirm={handleResetAll}
+        confirmLabel="Apagar tudo"
+        cancelLabel="Cancelar"
+      >
+        <div className="space-y-3">
+          <p className="text-muted-foreground">
+            Esta ação vai apagar <strong className="text-foreground">permanentemente</strong> todas as suas cifras, hinários e dados de perfil.
+          </p>
+          <p className="text-sm font-medium text-destructive">
+            Esta ação não pode ser desfeita. Faça um backup antes de continuar.
+          </p>
         </div>
       </Modal>
     </div>

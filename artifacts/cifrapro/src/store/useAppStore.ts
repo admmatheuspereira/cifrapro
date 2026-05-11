@@ -13,12 +13,13 @@ interface AppState {
 
   addHinario: (name: string) => void;
   deleteHinario: (id: string) => void;
-  
+
   addCifraToHinario: (hinarioId: string, cifraId: string) => void;
   removeCifraFromHinario: (hinarioId: string, cifraId: string) => void;
 
   updateProfile: (profile: Partial<UserProfile>) => void;
   importData: (cifras: Cifra[], hinarios: Hinario[]) => void;
+  resetAllData: () => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -26,7 +27,7 @@ export const useAppStore = create<AppState>()(
     (set) => ({
       cifras: [],
       hinarios: [],
-      profile: { name: "", photoUrl: null },
+      profile: { name: "", photoUrl: null, theme: "dark" },
 
       addCifra: (cifraData) => set((state) => {
         const id = crypto.randomUUID();
@@ -41,7 +42,7 @@ export const useAppStore = create<AppState>()(
       }),
 
       updateCifra: (id, updates) => set((state) => ({
-        cifras: state.cifras.map(c => 
+        cifras: state.cifras.map(c =>
           c.id === id ? { ...c, ...updates, updatedAt: Date.now() } : c
         )
       })),
@@ -69,7 +70,7 @@ export const useAppStore = create<AppState>()(
       })),
 
       addCifraToHinario: (hinarioId, cifraId) => set((state) => ({
-        hinarios: state.hinarios.map(h => 
+        hinarios: state.hinarios.map(h =>
           h.id === hinarioId && !h.cifraIds.includes(cifraId)
             ? { ...h, cifraIds: [...h.cifraIds, cifraId] }
             : h
@@ -77,7 +78,7 @@ export const useAppStore = create<AppState>()(
       })),
 
       removeCifraFromHinario: (hinarioId, cifraId) => set((state) => ({
-        hinarios: state.hinarios.map(h => 
+        hinarios: state.hinarios.map(h =>
           h.id === hinarioId
             ? { ...h, cifraIds: h.cifraIds.filter(id => id !== cifraId) }
             : h
@@ -89,11 +90,9 @@ export const useAppStore = create<AppState>()(
       })),
 
       importData: (cifras, hinarios) => set((state) => {
-        // Simple merge, keeping existing and avoiding dupes by ID could be done
-        // For now, overwrite or append. Let's append if ID doesn't exist.
         const existingCifraIds = new Set(state.cifras.map(c => c.id));
         const newCifras = cifras.filter(c => !existingCifraIds.has(c.id));
-        
+
         const existingHinarioIds = new Set(state.hinarios.map(h => h.id));
         const newHinarios = hinarios.filter(h => !existingHinarioIds.has(h.id));
 
@@ -101,7 +100,13 @@ export const useAppStore = create<AppState>()(
           cifras: [...state.cifras, ...newCifras],
           hinarios: [...state.hinarios, ...newHinarios]
         };
-      })
+      }),
+
+      resetAllData: () => set(() => ({
+        cifras: [],
+        hinarios: [],
+        profile: { name: "", photoUrl: null, theme: "dark" }
+      }))
     }),
     {
       name: "cifrapro-data"

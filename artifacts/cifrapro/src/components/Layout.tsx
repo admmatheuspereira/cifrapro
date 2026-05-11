@@ -1,7 +1,8 @@
 import { Link, useLocation } from "wouter";
 import { Home, Music, BookOpen, Search, User } from "lucide-react";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useAppStore } from "../store/useAppStore";
 
 interface LayoutProps {
   children: ReactNode;
@@ -17,6 +18,16 @@ const navItems = [
 
 export function Layout({ children }: LayoutProps) {
   const [location] = useLocation();
+  const { profile } = useAppStore();
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (profile.theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+  }, [profile.theme]);
 
   return (
     <div className="flex h-[100dvh] w-full flex-col md:flex-row overflow-hidden bg-background text-foreground">

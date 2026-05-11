@@ -1,20 +1,23 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useLocation } from "wouter";
-import { Upload, Save, X } from "lucide-react";
+import { Upload, Save, X, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { useAppStore } from "../store/useAppStore";
 import { CHROMATIC_SCALE } from "../utils/transpose";
+import { detectKey } from "../utils/detectKey";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Textarea } from "../components/ui/textarea";
+import { Checkbox } from "../components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
 
 export default function CifraEditor() {
   const params = useParams();
   const [, setLocation] = useLocation();
-  const { cifras, addCifra, updateCifra } = useAppStore();
-  
+  const { cifras, hinarios, addCifra, updateCifra, addCifraToHinario } = useAppStore();
+
   const isEdit = params.id && params.id !== "nova";
   const cifraToEdit = isEdit ? cifras.find(c => c.id === params.id) : null;
 
@@ -22,6 +25,10 @@ export default function CifraEditor() {
   const [artist, setArtist] = useState("");
   const [key, setKey] = useState("C");
   const [content, setContent] = useState("");
+  const [selectedHinarioIds, setSelectedHinarioIds] = useState<string[]>([]);
+  const [showPreview, setShowPreview] = useState(false);
+  const [keyAutoDetected, setKeyAutoDetected] = useState(false);
+  const [manuallyEdited, setManuallyEdited] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -31,24 +38,60 @@ export default function CifraEditor() {
       setArtist(cifraToEdit.artist);
       setKey(cifraToEdit.key || "C");
       setContent(cifraToEdit.content);
+      const preSelected = hinarios
+        .filter(h => h.cifraIds.includes(cifraToEdit.id))
+        .map(h => h.id);
+      setSelectedHinarioIds(preSelected);
     } else if (isEdit && !cifraToEdit) {
-      // Trying to edit a non-existent cifra
       setLocation("/cifras");
     }
   }, [isEdit, cifraToEdit, setLocation]);
 
-  const handleSave = () => {
-    if (!title.trim() || !artist.trim()) {
-      toast.error("Título e artista são obrigatórios!");
+  useEffect(() => {
+    if (manuallyEdited) return;
+    if (!content.trim()) return;
+
+    const timer = setTimeout(() => {
+      const detected = detectKey(content);
+      if (detected) {
+        setKey(detected);
+        setKeyAutoDetected(true);
+      } else {
+        setKeyAutoDetected(false);
+      }
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [content, manuallyEdited]);
+
+  const doSave = () => {
+    if (!title.trim()) {
+      toast.error("O título é obrigatório!");
       return;
     }
 
     if (isEdit && cifraToEdit) {
       updateCifra(cifraToEdit.id, { title, artist, key, content });
+      hinarios.forEach(h => {
+        const isSelected = selectedHinarioIds.includes(h.id);
+        const isAlreadyIn = h.cifraIds.includes(cifraToEdit.id);
+        if (isSelected && !isAlreadyIn) {
+          addCifraToHinario(h.id, cifraToEdit.id);
+        }
+      });
       toast.success("Cifra atualizada com sucesso!");
       setLocation(`/cifras/${cifraToEdit.id}`);
     } else {
       addCifra({ title, artist, key, content });
+      if (selectedHinarioIds.length > 0) {
+        const latestCifras = useAppStore.getState().cifras;
+        const newCifra = latestCifras[0];
+        if (newCifra) {
+          selectedHinarioIds.forEach(hinarioId => {
+            addCifraToHinario(hinarioId, newCifra.id);
+          });
+        }
+      }
       toast.success("Cifra criada com sucesso!");
       setLocation("/cifras");
     }
@@ -63,19 +106,22 @@ export default function CifraEditor() {
       const text = event.target?.result as string;
       if (text) {
         setContent(text);
+        setManuallyEdited(false);
+        setKeyAutoDetected(false);
         toast.success("Arquivo importado!");
       }
     };
     reader.readAsText(file);
-    
-    // Reset file input
+
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
+  const toggleHinario = (id: string) => {
+    setSelectedHinarioIds(prev =>
+      prev.includes(id) ? prev.filter(h => h !== id) : [...prev, id]
+    );
   };
 
   return (
@@ -89,7 +135,11 @@ export default function CifraEditor() {
             <X size={18} className="mr-2" />
             Cancelar
           </Button>
-          <Button onClick={handleSave} data-testid="button-editor-salvar">
+          <Button variant="outline" onClick={() => setShowPreview(true)} data-testid="button-editor-preview">
+            <Eye size={18} className="mr-2" />
+            Prévia
+          </Button>
+          <Button onClick={doSave} data-testid="button-editor-salvar">
             <Save size={18} className="mr-2" />
             Salvar
           </Button>
@@ -99,22 +149,27 @@ export default function CifraEditor() {
       <div className="space-y-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Título</Label>
-            <Input 
-              id="title" 
-              value={title} 
-              onChange={(e) => setTitle(e.target.value)} 
+            <Label htmlFor="title">
+              Título <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               placeholder="Ex: Teu Amor Não Falha"
               className="bg-card min-h-[48px]"
               data-testid="input-editor-title"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="artist">Artista / Ministério</Label>
-            <Input 
-              id="artist" 
-              value={artist} 
-              onChange={(e) => setArtist(e.target.value)} 
+            <Label htmlFor="artist">
+              Artista / Ministério
+              <span className="text-xs text-muted-foreground font-normal ml-2">(opcional)</span>
+            </Label>
+            <Input
+              id="artist"
+              value={artist}
+              onChange={(e) => setArtist(e.target.value)}
               placeholder="Ex: Nivea Soares"
               className="bg-card min-h-[48px]"
               data-testid="input-editor-artist"
@@ -124,12 +179,26 @@ export default function CifraEditor() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="key">Tom Original</Label>
-            <Select value={key} onValueChange={setKey}>
+            <Label htmlFor="key" className="flex items-center gap-2">
+              Tom Original
+              {keyAutoDetected && !manuallyEdited && (
+                <span className="text-xs text-muted-foreground italic font-normal">
+                  🎵 Detectado automaticamente
+                </span>
+              )}
+            </Label>
+            <Select
+              value={key}
+              onValueChange={(val) => {
+                setKey(val);
+                setManuallyEdited(true);
+                setKeyAutoDetected(false);
+              }}
+            >
               <SelectTrigger id="key" className="bg-card min-h-[48px]" data-testid="select-editor-key">
                 <SelectValue placeholder="Selecione o tom" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-[220px] overflow-y-auto">
                 {CHROMATIC_SCALE.map((note) => (
                   <SelectItem key={note} value={note} data-testid={`select-option-${note}`}>
                     {note}
@@ -138,23 +207,46 @@ export default function CifraEditor() {
               </SelectContent>
             </Select>
           </div>
-          
+
           <div className="space-y-2 flex flex-col justify-end">
             <Label className="md:invisible">Importar</Label>
-            <input 
-              type="file" 
-              accept=".txt" 
-              className="hidden" 
-              ref={fileInputRef} 
+            <input
+              type="file"
+              accept=".txt"
+              className="hidden"
+              ref={fileInputRef}
               onChange={handleFileUpload}
               data-testid="input-file-import"
             />
-            <Button variant="outline" className="w-full min-h-[48px] border-dashed" onClick={triggerFileInput} data-testid="button-editor-import">
+            <Button variant="outline" className="w-full min-h-[48px] border-dashed" onClick={() => fileInputRef.current?.click()} data-testid="button-editor-import">
               <Upload size={18} className="mr-2" />
               Importar arquivo .txt
             </Button>
           </div>
         </div>
+
+        {hinarios.length > 0 && (
+          <div className="space-y-2">
+            <Label>Adicionar ao Hinário</Label>
+            <div className="bg-card border border-border rounded-lg p-3 space-y-2 max-h-[160px] overflow-y-auto">
+              {hinarios.map((h) => (
+                <div key={h.id} className="flex items-center gap-3 py-1">
+                  <Checkbox
+                    id={`hinario-${h.id}`}
+                    checked={selectedHinarioIds.includes(h.id)}
+                    onCheckedChange={() => toggleHinario(h.id)}
+                  />
+                  <label
+                    htmlFor={`hinario-${h.id}`}
+                    className="text-sm cursor-pointer select-none flex-1"
+                  >
+                    {h.name}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex-1 flex flex-col min-h-0 space-y-2">
@@ -171,6 +263,24 @@ export default function CifraEditor() {
           data-testid="textarea-editor-content"
         />
       </div>
+
+      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-serif text-xl">Prévia da Cifra</DialogTitle>
+          </DialogHeader>
+          <div className="mt-2">
+            <h2 className="text-2xl font-serif font-bold text-foreground mb-1">
+              {title || <span className="text-muted-foreground italic text-lg">Sem título</span>}
+            </h2>
+            {artist && <p className="text-muted-foreground mb-1">{artist}</p>}
+            <p className="text-sm text-primary mb-4 font-medium">Tom: {key}</p>
+            <div className="font-mono text-sm leading-relaxed whitespace-pre-wrap bg-muted/40 rounded-lg p-4 border border-border">
+              {content || <span className="text-muted-foreground italic">Nenhum conteúdo ainda...</span>}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

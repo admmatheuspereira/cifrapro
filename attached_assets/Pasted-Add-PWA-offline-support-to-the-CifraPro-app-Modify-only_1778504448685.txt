@@ -1,3 +1,19 @@
+Add PWA (offline support) to the CifraPro app.
+Modify only these files: artifacts/cifrapro/vite.config.ts, 
+artifacts/cifrapro/package.json, and create artifacts/cifrapro/public/manifest.json.
+Do not touch any src/ files.
+
+---
+
+STEP 1 — Add vite-plugin-pwa to artifacts/cifrapro/package.json
+
+In the devDependencies section, add:
+"vite-plugin-pwa": "^0.20.0"
+
+---
+
+STEP 2 — Replace artifacts/cifrapro/vite.config.ts with:
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
@@ -87,3 +103,17 @@ export default defineConfig({
     allowedHosts: true,
   },
 });
+
+---
+
+STEP 3 — Create artifacts/cifrapro/public/icons/ folder with placeholder icons.
+Generate two simple PNG icons programmatically using a script or use any 
+existing icon files renamed to icon-192.png and icon-512.png.
+If no icon generation is possible, create the folder and add a note.
+
+---
+
+STEP 4 — After adding the dependency, run:
+pnpm install
+
+inside artifacts/cifrapro/ to update the lockfile.

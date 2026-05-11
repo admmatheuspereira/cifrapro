@@ -9,7 +9,7 @@ import { Modal } from "../components/Modal";
 
 export default function Hinarios() {
   const { hinarios, addHinario, deleteHinario } = useAppStore();
-  
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newHinarioName, setNewHinarioName] = useState("");
   const [hinarioToDelete, setHinarioToDelete] = useState<string | null>(null);
@@ -19,7 +19,7 @@ export default function Hinarios() {
       toast.error("O nome do hinário é obrigatório!");
       return;
     }
-    
+
     addHinario(newHinarioName);
     toast.success("Hinário criado com sucesso!");
     setNewHinarioName("");
@@ -62,8 +62,12 @@ export default function Hinarios() {
           </div>
         ) : (
           hinarios.map(hinario => (
-            <div key={hinario.id} className="bg-card hover:bg-card/80 border border-border rounded-xl p-4 flex items-center justify-between group transition-colors" data-testid={`card-hinario-${hinario.id}`}>
-              <Link href={`/hinarios/${hinario.id}`} className="flex-1 min-w-0 pr-4 block cursor-pointer">
+            <div
+              key={hinario.id}
+              className="bg-card hover:bg-card/80 border border-border rounded-xl p-4 flex items-center justify-between group transition-colors"
+              data-testid={`card-hinario-${hinario.id}`}
+            >
+              <Link href={`/hinarios/${hinario.id}`} className="flex-1 min-w-0 pr-3 block cursor-pointer">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
                     <BookOpen size={20} />
@@ -76,16 +80,17 @@ export default function Hinarios() {
                   </div>
                 </div>
               </Link>
-              
-              <div className="flex items-center gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-10 w-10 text-muted-foreground hover:text-destructive"
+
+              {/* Always visible on mobile, hover-reveal on desktop */}
+              <div className="flex items-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 text-muted-foreground hover:text-destructive"
                   onClick={() => setHinarioToDelete(hinario.id)}
                   data-testid={`button-delete-hinario-${hinario.id}`}
                 >
-                  <Trash2 size={18} />
+                  <Trash2 size={16} />
                 </Button>
               </div>
             </div>
@@ -93,15 +98,20 @@ export default function Hinarios() {
         )}
       </div>
 
-      <div className="fixed bottom-[96px] right-4 md:hidden">
-        <Button size="icon" className="w-14 h-14 rounded-full shadow-lg" onClick={() => setShowCreateModal(true)} data-testid="fab-novo-hinario">
+      <div className="fixed bottom-[88px] right-4 md:hidden z-30">
+        <Button
+          size="icon"
+          className="w-14 h-14 rounded-full shadow-lg shadow-primary/25"
+          onClick={() => setShowCreateModal(true)}
+          data-testid="fab-novo-hinario"
+        >
           <Plus size={24} />
         </Button>
       </div>
 
       <Modal
         isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
+        onClose={() => { setShowCreateModal(false); setNewHinarioName(""); }}
         title="Novo Hinário"
         onConfirm={handleCreate}
         confirmLabel="Criar"
@@ -109,9 +119,9 @@ export default function Hinarios() {
       >
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">Dê um nome para sua nova coleção de cifras.</p>
-          <Input 
+          <Input
             autoFocus
-            placeholder="Ex: Culto de Domingo" 
+            placeholder="Ex: Culto de Domingo"
             value={newHinarioName}
             onChange={(e) => setNewHinarioName(e.target.value)}
             className="min-h-[48px]"

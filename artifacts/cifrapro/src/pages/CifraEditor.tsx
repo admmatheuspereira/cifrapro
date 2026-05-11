@@ -124,23 +124,26 @@ export default function CifraEditor() {
     );
   };
 
+  const cancelTarget = isEdit ? `/cifras/${params.id}` : "/cifras";
+
   return (
     <div className="p-4 md:p-8 max-w-4xl mx-auto h-full flex flex-col">
-      <header className="mb-6 flex items-center justify-between mt-4">
+      {/* Header — stacks on very small screens */}
+      <header className="mb-6 mt-4 flex flex-col xs:flex-row gap-3 xs:items-center xs:justify-between">
         <h1 className="text-2xl font-serif font-bold text-foreground">
           {isEdit ? "Editar Cifra" : "Nova Cifra"}
         </h1>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" onClick={() => setLocation(isEdit ? `/cifras/${params.id}` : "/cifras")} data-testid="button-editor-cancelar">
-            <X size={18} className="mr-2" />
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button variant="ghost" size="sm" onClick={() => setLocation(cancelTarget)} data-testid="button-editor-cancelar">
+            <X size={16} className="mr-1.5" />
             Cancelar
           </Button>
-          <Button variant="outline" onClick={() => setShowPreview(true)} data-testid="button-editor-preview">
-            <Eye size={18} className="mr-2" />
+          <Button variant="outline" size="sm" onClick={() => setShowPreview(true)} data-testid="button-editor-preview">
+            <Eye size={16} className="mr-1.5" />
             Prévia
           </Button>
-          <Button onClick={doSave} data-testid="button-editor-salvar">
-            <Save size={18} className="mr-2" />
+          <Button size="sm" onClick={doSave} data-testid="button-editor-salvar">
+            <Save size={16} className="mr-1.5" />
             Salvar
           </Button>
         </div>
@@ -179,7 +182,7 @@ export default function CifraEditor() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="key" className="flex items-center gap-2">
+            <Label htmlFor="key" className="flex items-center gap-2 flex-wrap">
               Tom Original
               {keyAutoDetected && !manuallyEdited && (
                 <span className="text-xs text-muted-foreground italic font-normal">
@@ -198,7 +201,7 @@ export default function CifraEditor() {
               <SelectTrigger id="key" className="bg-card min-h-[48px]" data-testid="select-editor-key">
                 <SelectValue placeholder="Selecione o tom" />
               </SelectTrigger>
-              <SelectContent className="max-h-[220px] overflow-y-auto">
+              <SelectContent>
                 {CHROMATIC_SCALE.map((note) => (
                   <SelectItem key={note} value={note} data-testid={`select-option-${note}`}>
                     {note}
@@ -228,9 +231,9 @@ export default function CifraEditor() {
         {hinarios.length > 0 && (
           <div className="space-y-2">
             <Label>Adicionar ao Hinário</Label>
-            <div className="bg-card border border-border rounded-lg p-3 space-y-2 max-h-[160px] overflow-y-auto">
+            <div className="bg-card border border-border rounded-lg p-3 space-y-1 max-h-[160px] overflow-y-auto">
               {hinarios.map((h) => (
-                <div key={h.id} className="flex items-center gap-3 py-1">
+                <div key={h.id} className="flex items-center gap-3 py-1.5 px-1 rounded-md hover:bg-muted/50 transition-colors">
                   <Checkbox
                     id={`hinario-${h.id}`}
                     checked={selectedHinarioIds.includes(h.id)}
@@ -250,7 +253,7 @@ export default function CifraEditor() {
       </div>
 
       <div className="flex-1 flex flex-col min-h-0 space-y-2">
-        <Label htmlFor="content" className="flex items-center justify-between">
+        <Label htmlFor="content" className="flex items-center justify-between flex-wrap gap-1">
           <span>Conteúdo da Cifra</span>
           <span className="text-xs text-muted-foreground font-normal">Use formato de texto simples</span>
         </Label>

@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { Button } from "./ui/button";
@@ -14,6 +14,16 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, title, children, onConfirm, confirmLabel = "Confirmar", cancelLabel = "Cancelar" }: ModalProps) {
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [isOpen]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -22,21 +32,23 @@ export function Modal({ isOpen, onClose, title, children, onConfirm, confirmLabe
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="fixed inset-0 z-50 bg-black/60"
             onClick={onClose}
           />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4 pb-4 sm:p-4 pointer-events-none">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-card border border-border w-full max-w-md rounded-xl shadow-2xl p-6 pointer-events-auto"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 16 }}
+              transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="bg-card border border-border w-full max-w-md rounded-2xl shadow-2xl p-6 pointer-events-auto"
             >
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">{title}</h2>
-                <button 
+                <button
                   onClick={onClose}
-                  className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                  className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-muted"
                   data-testid="button-close-modal"
                 >
                   <X size={20} />

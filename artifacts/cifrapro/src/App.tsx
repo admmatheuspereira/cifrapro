@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { Layout } from "./components/Layout";
+import { useAppStore } from "./store/useAppStore";
 import Home from "./pages/Home";
 import Cifras from "./pages/Cifras";
 import CifraEditor from "./pages/CifraEditor";
@@ -17,18 +18,28 @@ import NotFound from "./pages/not-found";
 
 const queryClient = new QueryClient();
 
+// Pages that need full-viewport height (they manage their own scroll internally)
+const FULL_HEIGHT_ROUTES = ["/cifras/", "/hinarios/"];
+function isFullHeightRoute(location: string) {
+  return (
+    (location.startsWith("/cifras/") && !location.endsWith("/editar") && location !== "/cifras/nova") ||
+    (location.startsWith("/hinarios/") && location !== "/hinarios")
+  );
+}
+
 function PageTransition({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
-  
+  const full = isFullHeightRoute(location);
+
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={location}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: 0.2 }}
-        className="min-h-full"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.12, ease: "easeOut" }}
+        className={full ? "h-full" : "min-h-full"}
       >
         {children}
       </motion.div>
@@ -57,6 +68,17 @@ function AppRouter() {
   );
 }
 
+function ThemedToaster() {
+  const { profile } = useAppStore();
+  return (
+    <Toaster
+      theme={profile.theme ?? "dark"}
+      position="top-center"
+      richColors
+    />
+  );
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -64,7 +86,7 @@ function App() {
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
           <AppRouter />
         </WouterRouter>
-        <Toaster theme="dark" position="top-center" richColors />
+        <ThemedToaster />
       </TooltipProvider>
     </QueryClientProvider>
   );

@@ -80,12 +80,16 @@ export default function Cifras() {
           </div>
         ) : (
           filteredCifras.map(cifra => (
-            <div key={cifra.id} className="bg-card hover:bg-card/80 border border-border rounded-xl p-4 flex items-center justify-between group transition-colors" data-testid={`card-cifra-${cifra.id}`}>
-              <Link href={`/cifras/${cifra.id}`} className="flex-1 min-w-0 pr-4 block cursor-pointer">
+            <div
+              key={cifra.id}
+              className="bg-card hover:bg-card/80 border border-border rounded-xl p-4 flex items-center justify-between group transition-colors"
+              data-testid={`card-cifra-${cifra.id}`}
+            >
+              <Link href={`/cifras/${cifra.id}`} className="flex-1 min-w-0 pr-3 block cursor-pointer">
                 <div className="flex items-center gap-3">
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-foreground line-clamp-1">{cifra.title}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-1">{cifra.artist}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-1">{cifra.artist || <span className="italic opacity-60">Sem artista</span>}</p>
                   </div>
                   {cifra.key && (
                     <div className="bg-primary/20 text-primary px-3 py-1 rounded-full text-sm font-medium shrink-0">
@@ -94,21 +98,27 @@ export default function Cifras() {
                   )}
                 </div>
               </Link>
-              
-              <div className="flex items-center gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+
+              {/* Always visible on mobile, hover-reveal on desktop */}
+              <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
                 <Link href={`/cifras/${cifra.id}/editar`}>
-                  <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground hover:text-foreground" data-testid={`button-edit-cifra-${cifra.id}`}>
-                    <Edit2 size={18} />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 text-muted-foreground hover:text-foreground"
+                    data-testid={`button-edit-cifra-${cifra.id}`}
+                  >
+                    <Edit2 size={16} />
                   </Button>
                 </Link>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-10 w-10 text-muted-foreground hover:text-destructive"
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 text-muted-foreground hover:text-destructive"
                   onClick={() => setCifraToDelete(cifra.id)}
                   data-testid={`button-delete-cifra-${cifra.id}`}
                 >
-                  <Trash2 size={18} />
+                  <Trash2 size={16} />
                 </Button>
               </div>
             </div>
@@ -116,9 +126,9 @@ export default function Cifras() {
         )}
       </div>
 
-      <div className="fixed bottom-[96px] right-4 md:hidden">
+      <div className="fixed bottom-[88px] right-4 md:hidden z-30">
         <Link href="/cifras/nova">
-          <Button size="icon" className="w-14 h-14 rounded-full shadow-lg" data-testid="fab-nova-cifra">
+          <Button size="icon" className="w-14 h-14 rounded-full shadow-lg shadow-primary/25" data-testid="fab-nova-cifra">
             <Plus size={24} />
           </Button>
         </Link>

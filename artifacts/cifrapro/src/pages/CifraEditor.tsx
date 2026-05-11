@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useLocation } from "wouter";
-import { Upload, Save, X, Eye } from "lucide-react";
+import { Upload, Save, X, Eye, Maximize2, Minimize2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAppStore } from "../store/useAppStore";
 import { CHROMATIC_SCALE } from "../utils/transpose";
@@ -29,6 +29,7 @@ export default function CifraEditor() {
   const [showPreview, setShowPreview] = useState(false);
   const [keyAutoDetected, setKeyAutoDetected] = useState(false);
   const [manuallyEdited, setManuallyEdited] = useState(false);
+  const [isContentExpanded, setIsContentExpanded] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -128,7 +129,7 @@ export default function CifraEditor() {
 
   return (
     <div className="min-h-full overflow-y-auto pb-24 md:pb-8 px-4 md:px-8 max-w-4xl mx-auto flex flex-col">
-      {/* Header — stacks on very small screens */}
+      {/* Header */}
       <header className="mb-6 mt-4 flex flex-col xs:flex-row gap-3 xs:items-center xs:justify-between">
         <h1 className="text-2xl font-serif font-bold text-foreground">
           {isEdit ? "Editar Cifra" : "Nova Cifra"}
@@ -254,7 +255,19 @@ export default function CifraEditor() {
 
       <div className="flex-1 flex flex-col min-h-0 space-y-2">
         <Label htmlFor="content" className="flex items-center justify-between flex-wrap gap-1">
-          <span>Conteúdo da Cifra</span>
+          <div className="flex items-center gap-2">
+            <span>Conteúdo da Cifra</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 text-muted-foreground hover:text-foreground"
+              onClick={() => setIsContentExpanded(true)}
+              title="Expandir editor"
+              data-testid="button-expand-content"
+            >
+              <Maximize2 size={14} />
+            </Button>
+          </div>
           <span className="text-xs text-muted-foreground font-normal">Use formato de texto simples</span>
         </Label>
         <Textarea
@@ -266,6 +279,36 @@ export default function CifraEditor() {
           data-testid="textarea-editor-content"
         />
       </div>
+
+      {/* Fullscreen Content Editor */}
+      {isContentExpanded && (
+        <div className="fixed inset-0 z-50 bg-background flex flex-col">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card shrink-0">
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-foreground">Conteúdo da Cifra</span>
+              <span className="text-xs text-muted-foreground">Use formato de texto simples</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              onClick={() => setIsContentExpanded(false)}
+              title="Fechar tela cheia"
+              data-testid="button-collapse-content"
+            >
+              <Minimize2 size={16} />
+            </Button>
+          </div>
+          <Textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="[Intro] C  G  Am  F&#10;&#10;[Verso]&#10;C            G&#10;Nada vai me separar..."
+            className="flex-1 resize-none bg-background font-mono text-sm leading-relaxed p-4 border-0 rounded-none focus-visible:ring-0"
+            autoFocus
+            data-testid="textarea-editor-content-expanded"
+          />
+        </div>
+      )}
 
       <Dialog open={showPreview} onOpenChange={setShowPreview}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">

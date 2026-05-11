@@ -16,7 +16,7 @@ const navItems = [
   { href: "/perfil", label: "Perfil", icon: User },
 ];
 
-const NAV_HEIGHT = 56; // px — reduced from 80
+const NAV_HEIGHT = 72;
 
 export function Layout({ children }: LayoutProps) {
   const [location] = useLocation();
@@ -69,7 +69,7 @@ export function Layout({ children }: LayoutProps) {
         {children}
       </main>
 
-      {/* Mobile Bottom Bar — compact */}
+      {/* Mobile Bottom Bar */}
       <nav
         className="md:hidden fixed bottom-0 left-0 right-0 bg-sidebar/95 backdrop-blur border-t border-border flex items-center justify-around z-50"
         style={{ height: `${NAV_HEIGHT}px` }}
@@ -80,16 +80,16 @@ export function Layout({ children }: LayoutProps) {
           return (
             <Link key={item.href} href={item.href}>
               <div
-                className="flex flex-col items-center justify-center gap-0.5 px-3 py-1 cursor-pointer transition-colors"
+                className="flex flex-col items-center justify-center gap-1 px-4 py-2 cursor-pointer transition-colors"
                 data-testid={`nav-mobile-${item.label.toLowerCase()}`}
               >
                 <motion.div
                   animate={isActive ? { scale: 1.15 } : { scale: 1 }}
                   transition={{ type: "spring", stiffness: 400, damping: 22 }}
                 >
-                  <Icon size={20} className={isActive ? "text-primary" : "text-muted-foreground"} />
+                  <Icon size={22} className={isActive ? "text-primary" : "text-muted-foreground"} />
                 </motion.div>
-                <span className={`text-[9px] leading-tight ${isActive ? "text-primary font-medium" : "text-muted-foreground"}`}>
+                <span className={`text-[10px] leading-tight ${isActive ? "text-primary font-medium" : "text-muted-foreground"}`}>
                   {item.label}
                 </span>
               </div>

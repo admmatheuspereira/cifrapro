@@ -67,41 +67,54 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* Light theme (default) */
+/* Light theme — Prussian/Sapphire/Celadon/Carolina Blue palette */
 :root {
-  --background: 220 20% 97%;
+  /* #E8F1F2 Azure X 11 — background */
+  --background: 186 22% 93%;
+  /* white cards */
   --card: 0 0% 100%;
-  --primary: 244 100% 60%;
+  /* #1B98E0 Carolina Blue — primary actions */
+  --primary: 205 75% 49%;
   --primary-foreground: 0 0% 100%;
-  --foreground: 240 20% 12%;
-  --muted-foreground: 240 8% 46%;
-  --border: 220 14% 88%;
-  --card-border: 220 14% 88%;
+  /* #13293D Prussian Blue — text */
+  --foreground: 207 52% 16%;
+  /* muted text */
+  --muted-foreground: 202 30% 42%;
+  /* borders */
+  --border: 200 30% 80%;
+  --card-border: 200 30% 80%;
+  /* sidebar white */
   --sidebar: 0 0% 100%;
-  --sidebar-foreground: 240 20% 12%;
-  --sidebar-border: 220 14% 88%;
-  --sidebar-primary: 244 100% 60%;
+  --sidebar-foreground: 207 52% 16%;
+  --sidebar-border: 200 30% 82%;
+  /* #1B98E0 Carolina Blue — sidebar active */
+  --sidebar-primary: 205 75% 49%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 220 20% 94%;
-  --sidebar-accent-foreground: 240 20% 12%;
-  --sidebar-ring: 244 100% 60%;
+  /* light blue tint for hover/active bg */
+  --sidebar-accent: 186 30% 90%;
+  --sidebar-accent-foreground: 207 52% 16%;
+  --sidebar-ring: 205 75% 49%;
   --popover: 0 0% 100%;
-  --popover-foreground: 240 20% 12%;
-  --popover-border: 220 14% 88%;
-  --muted: 220 20% 94%;
-  --accent: 244 100% 60%;
+  --popover-foreground: 207 52% 16%;
+  --popover-border: 200 30% 80%;
+  /* muted backgrounds */
+  --muted: 186 22% 89%;
+  /* #1B98E0 accent */
+  --accent: 205 75% 49%;
   --accent-foreground: 0 0% 100%;
-  --secondary: 220 20% 92%;
-  --secondary-foreground: 240 20% 12%;
+  /* #247BA0 secondary */
+  --secondary: 200 63% 38%;
+  --secondary-foreground: 0 0% 100%;
+  /* destructive stays red */
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
-  --input: 220 14% 88%;
-  --ring: 244 100% 60%;
-  --chart-1: 244 100% 60%;
-  --chart-2: 280 70% 60%;
-  --chart-3: 200 80% 55%;
-  --chart-4: 160 60% 50%;
-  --chart-5: 40 90% 60%;
+  --input: 200 30% 82%;
+  --ring: 205 75% 49%;
+  --chart-1: 205 75% 49%;
+  --chart-2: 202 100% 29%;
+  --chart-3: 200 63% 38%;
+  --chart-4: 207 52% 16%;
+  --chart-5: 186 22% 70%;
 
   --app-font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', system-ui, sans-serif;
   --app-font-serif: 'Playfair Display', serif;
@@ -109,41 +122,53 @@
   --radius: 0.625rem;
 }
 
-/* Dark theme */
+/* Dark theme — deep Prussian Blues */
 .dark {
-  --background: 240 40% 8%;
-  --card: 240 22% 14%;
-  --primary: 244 100% 69%;
+  /* #13293D Prussian Blue — dark background */
+  --background: 207 52% 10%;
+  /* slightly lighter card */
+  --card: 207 45% 15%;
+  /* #1B98E0 Carolina Blue — primary */
+  --primary: 205 75% 55%;
   --primary-foreground: 0 0% 100%;
-  --foreground: 0 0% 88%;
-  --muted-foreground: 240 11% 60%;
-  --border: 240 21% 22%;
-  --card-border: 240 21% 22%;
-  --sidebar: 240 30% 11%;
-  --sidebar-foreground: 0 0% 88%;
-  --sidebar-border: 240 21% 22%;
-  --sidebar-primary: 244 100% 69%;
+  /* #E8F1F2 light text */
+  --foreground: 186 22% 92%;
+  /* muted text */
+  --muted-foreground: 200 20% 58%;
+  /* dark borders */
+  --border: 207 35% 22%;
+  --card-border: 207 35% 22%;
+  /* #13293D sidebar */
+  --sidebar: 207 52% 12%;
+  --sidebar-foreground: 186 22% 92%;
+  --sidebar-border: 207 35% 22%;
+  /* Carolina Blue active */
+  --sidebar-primary: 205 75% 55%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 240 22% 18%;
-  --sidebar-accent-foreground: 0 0% 88%;
-  --sidebar-ring: 244 100% 69%;
-  --popover: 240 30% 11%;
-  --popover-foreground: 0 0% 88%;
-  --popover-border: 240 21% 22%;
-  --muted: 240 22% 16%;
-  --accent: 244 100% 69%;
+  /* darker blue accent for hover */
+  --sidebar-accent: 207 45% 20%;
+  --sidebar-accent-foreground: 186 22% 92%;
+  --sidebar-ring: 205 75% 55%;
+  --popover: 207 52% 12%;
+  --popover-foreground: 186 22% 92%;
+  --popover-border: 207 35% 22%;
+  /* muted dark */
+  --muted: 207 45% 17%;
+  /* accent */
+  --accent: 205 75% 55%;
   --accent-foreground: 0 0% 100%;
-  --secondary: 240 22% 18%;
-  --secondary-foreground: 0 0% 88%;
+  /* #247BA0 secondary */
+  --secondary: 200 63% 38%;
+  --secondary-foreground: 0 0% 100%;
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
-  --input: 240 21% 22%;
-  --ring: 244 100% 69%;
-  --chart-1: 244 100% 69%;
-  --chart-2: 280 70% 60%;
-  --chart-3: 200 80% 55%;
-  --chart-4: 160 60% 50%;
-  --chart-5: 40 90% 60%;
+  --input: 207 35% 22%;
+  --ring: 205 75% 55%;
+  --chart-1: 205 75% 55%;
+  --chart-2: 202 100% 40%;
+  --chart-3: 200 63% 50%;
+  --chart-4: 186 22% 70%;
+  --chart-5: 207 52% 35%;
 }
 
 @layer base {

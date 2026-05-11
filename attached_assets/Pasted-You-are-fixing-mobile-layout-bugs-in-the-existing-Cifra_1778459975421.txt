@@ -1,0 +1,64 @@
+You are fixing mobile layout bugs in the existing CifraPro app.
+Do NOT rewrite entire files. Apply only the targeted fixes below.
+
+---
+
+## BUG 1 — Modal "Criar Hinário": keyboard covers the input and save button
+
+File: the modal/dialog component used to create a new Hinário.
+
+Fix:
+- The modal must not be vertically centered with fixed positioning when keyboard is open
+- Wrap the modal content with: style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+- Add to the modal container: className includes "overflow-y-auto max-h-[90vh]"
+- Position the modal at the TOP of the screen on mobile, not centered:
+  on mobile (< 768px) use: "items-start pt-8" instead of "items-center"
+- Ensure the Save/Confirm button is always visible inside the scrollable area,
+  not fixed outside it
+
+---
+
+## BUG 2 — Painel "Restaurar / Backup": content is clipped on mobile
+
+File: src/pages/Perfil.tsx (or whichever page contains backup/restore UI)
+
+Fix:
+- Wrap the entire page content in:
+  <div className="overflow-y-auto h-full pb-24 px-4">
+- Ensure the bottom navigation bar (fixed, ~64px tall) does not overlap content:
+  add pb-24 (96px) to the main scrollable container of this page
+- Any card or panel inside must NOT have a fixed height — use min-h instead of h
+
+---
+
+## BUG 3 — Editor "Nova Cifra": Select dropdown for "Tom Original" is not scrollable,
+           options are clipped on mobile
+
+File: src/pages/CifraEditor.tsx
+
+Fix:
+- The <SelectContent> component must have explicitly set:
+  className="max-h-[240px] overflow-y-auto"
+- Ensure the SelectContent renders inside a portal (most Radix Select does this by 
+  default — confirm it is NOT inside a container with overflow:hidden)
+- The overall page must be scrollable on mobile. Wrap the return content in:
+  <div className="overflow-y-auto h-full pb-24">
+  instead of any fixed-height flex container that prevents scrolling
+
+---
+
+## GENERAL MOBILE FIX (apply to all 3 pages above)
+
+For every page affected, ensure:
+1. The main container uses: className="min-h-screen overflow-y-auto pb-24 px-4 md:px-8"
+   (pb-24 = space for fixed bottom nav on mobile)
+2. No parent container has overflow:hidden that would clip children
+3. All modals/dialogs use max-h-[90vh] overflow-y-auto so they scroll internally
+   when keyboard is open
+
+---
+
+## WHAT NOT TO TOUCH
+- Do not modify routing, store, or any utility file
+- Do not change desktop layout (md: breakpoint and above must remain unchanged)
+- Do not alter any feature logic — layout fixes only

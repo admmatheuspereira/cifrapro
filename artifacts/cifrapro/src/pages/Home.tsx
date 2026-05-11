@@ -80,7 +80,7 @@ export default function Home() {
       </section>
 
       {/* Floating Action Button for Mobile */}
-      <div className="fixed bottom-[96px] right-4 md:hidden">
+      <div className="fixed bottom-[64px] right-4 md:hidden">
         <Link href="/cifras/nova">
           <Button size="icon" className="w-14 h-14 rounded-full shadow-lg" data-testid="fab-nova-cifra">
             <Plus size={24} />

@@ -127,7 +127,7 @@ export default function CifraEditor() {
   const cancelTarget = isEdit ? `/cifras/${params.id}` : "/cifras";
 
   return (
-    <div className="p-4 md:p-8 max-w-4xl mx-auto h-full flex flex-col">
+    <div className="min-h-full overflow-y-auto pb-24 md:pb-8 px-4 md:px-8 max-w-4xl mx-auto flex flex-col">
       {/* Header — stacks on very small screens */}
       <header className="mb-6 mt-4 flex flex-col xs:flex-row gap-3 xs:items-center xs:justify-between">
         <h1 className="text-2xl font-serif font-bold text-foreground">
@@ -201,7 +201,7 @@ export default function CifraEditor() {
               <SelectTrigger id="key" className="bg-card min-h-[48px]" data-testid="select-editor-key">
                 <SelectValue placeholder="Selecione o tom" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-[240px] overflow-y-auto">
                 {CHROMATIC_SCALE.map((note) => (
                   <SelectItem key={note} value={note} data-testid={`select-option-${note}`}>
                     {note}

@@ -98,7 +98,7 @@ export default function Hinarios() {
         )}
       </div>
 
-      <div className="fixed bottom-[88px] right-4 md:hidden z-30">
+      <div className="fixed bottom-[64px] right-4 md:hidden z-30">
         <Button
           size="icon"
           className="w-14 h-14 rounded-full shadow-lg shadow-primary/25"

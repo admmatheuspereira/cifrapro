@@ -16,6 +16,8 @@ const navItems = [
   { href: "/perfil", label: "Perfil", icon: User },
 ];
 
+const NAV_HEIGHT = 56; // px — reduced from 80
+
 export function Layout({ children }: LayoutProps) {
   const [location] = useLocation();
   const { profile } = useAppStore();
@@ -36,22 +38,22 @@ export function Layout({ children }: LayoutProps) {
         <div className="p-6">
           <h1 className="text-2xl font-serif font-bold text-primary">CifraPro</h1>
         </div>
-        <nav className="flex-1 px-4 py-2 space-y-2 overflow-y-auto">
+        <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
             const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
             const Icon = item.icon;
             return (
               <Link key={item.href} href={item.href}>
                 <div
-                  className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors cursor-pointer min-h-[48px] ${
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors cursor-pointer ${
                     isActive
                       ? "bg-sidebar-accent text-sidebar-primary font-medium"
                       : "text-sidebar-foreground hover:bg-sidebar-accent/50"
                   }`}
                   data-testid={`nav-desktop-${item.label.toLowerCase()}`}
                 >
-                  <Icon size={20} className={isActive ? "text-sidebar-primary" : "text-muted-foreground"} />
-                  <span>{item.label}</span>
+                  <Icon size={18} className={isActive ? "text-sidebar-primary" : "text-muted-foreground"} />
+                  <span className="text-sm">{item.label}</span>
                 </div>
               </Link>
             );
@@ -59,29 +61,35 @@ export function Layout({ children }: LayoutProps) {
         </nav>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 relative overflow-y-auto overflow-x-hidden md:pb-0 pb-[80px]">
+      {/* Main Content Area — leaves room for mobile nav */}
+      <main
+        className="flex-1 relative overflow-y-auto overflow-x-hidden md:pb-0"
+        style={{ paddingBottom: `${NAV_HEIGHT}px` }}
+      >
         {children}
       </main>
 
-      {/* Mobile Bottom Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[80px] bg-sidebar border-t border-border flex items-center justify-around px-2 z-50 pb-safe">
+      {/* Mobile Bottom Bar — compact */}
+      <nav
+        className="md:hidden fixed bottom-0 left-0 right-0 bg-sidebar/95 backdrop-blur border-t border-border flex items-center justify-around z-50"
+        style={{ height: `${NAV_HEIGHT}px` }}
+      >
         {navItems.map((item) => {
           const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
           const Icon = item.icon;
           return (
             <Link key={item.href} href={item.href}>
               <div
-                className="flex flex-col items-center justify-center w-full h-full min-h-[48px] px-2 py-1 cursor-pointer transition-colors"
+                className="flex flex-col items-center justify-center gap-0.5 px-3 py-1 cursor-pointer transition-colors"
                 data-testid={`nav-mobile-${item.label.toLowerCase()}`}
               >
                 <motion.div
-                  animate={isActive ? { scale: 1.1 } : { scale: 1 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  animate={isActive ? { scale: 1.15 } : { scale: 1 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 22 }}
                 >
-                  <Icon size={24} className={isActive ? "text-primary" : "text-muted-foreground"} />
+                  <Icon size={20} className={isActive ? "text-primary" : "text-muted-foreground"} />
                 </motion.div>
-                <span className={`text-[10px] mt-1 ${isActive ? "text-primary font-medium" : "text-muted-foreground"}`}>
+                <span className={`text-[9px] leading-tight ${isActive ? "text-primary font-medium" : "text-muted-foreground"}`}>
                   {item.label}
                 </span>
               </div>

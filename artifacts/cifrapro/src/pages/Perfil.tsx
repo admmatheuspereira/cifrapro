@@ -115,7 +115,7 @@ export default function Perfil() {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-2xl mx-auto h-full flex flex-col">
+    <div className="min-h-full overflow-y-auto pb-24 md:pb-8 px-4 md:px-8 max-w-2xl mx-auto flex flex-col">
       <header className="mb-8 mt-4">
         <h1 className="text-3xl font-serif font-bold text-foreground">Perfil</h1>
         <p className="text-muted-foreground mt-1">Gerencie sua conta e seus dados</p>

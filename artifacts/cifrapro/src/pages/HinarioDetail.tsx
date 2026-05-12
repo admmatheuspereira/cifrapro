@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link, useLocation } from "wouter";
 import { ArrowLeft, Plus, Music, MinusCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -18,10 +18,13 @@ export default function HinarioDetail() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedCifraIds, setSelectedCifraIds] = useState<Set<string>>(new Set());
 
-  if (!hinario) {
-    setLocation("/hinarios");
-    return null;
-  }
+  useEffect(() => {
+    if (!hinario) {
+      setLocation("/hinarios");
+    }
+  }, [hinario, setLocation]);
+
+  if (!hinario) return null;
 
   const hinarioCifras = cifras.filter(c => hinario.cifraIds.includes(c.id));
   const availableCifras = cifras.filter(c => !hinario.cifraIds.includes(c.id));

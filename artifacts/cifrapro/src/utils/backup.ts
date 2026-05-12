@@ -36,7 +36,13 @@ export const downloadJson = (cifras: Cifra[], hinarios: Hinario[], profile?: Par
   URL.revokeObjectURL(url);
 };
 
-export const generateShareLink = (cifras: Cifra[], hinarios: Hinario[], profile?: Partial<UserProfile>): string => {
+const MAX_SHARE_URL_LENGTH = 8000;
+
+export const generateShareLink = (cifras: Cifra[], hinarios: Hinario[], profile?: Partial<UserProfile>): string | null => {
   const encoded = encodeBackup(cifras, hinarios, profile);
-  return `${window.location.origin}?data=${encoded}`;
+  const url = `${window.location.origin}?data=${encoded}`;
+  if (url.length > MAX_SHARE_URL_LENGTH) {
+    return null;
+  }
+  return url;
 };

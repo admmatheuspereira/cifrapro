@@ -48,6 +48,13 @@ export default function Perfil() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const MAX_PHOTO_SIZE = 500 * 1024; // 500 KB
+    if (file.size > MAX_PHOTO_SIZE) {
+      toast.error("A imagem é muito grande. Use uma imagem de até 500 KB.");
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (event) => {
       const result = event.target?.result as string;
@@ -96,6 +103,10 @@ export default function Perfil() {
 
   const handleShare = () => {
     const link = generateShareLink(cifras, hinarios, profile);
+    if (!link) {
+      toast.error("Seu repertório é grande demais para um Link Mágico. Use a opção de backup em JSON.");
+      return;
+    }
     navigator.clipboard.writeText(link)
       .then(() => toast.success("Link copiado para a área de transferência!"))
       .catch(() => toast.error("Erro ao copiar link."));

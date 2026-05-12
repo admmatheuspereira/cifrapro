@@ -78,6 +78,8 @@ export default function CifraEditor() {
         const isAlreadyIn = h.cifraIds.includes(cifraToEdit.id);
         if (isSelected && !isAlreadyIn) {
           addCifraToHinario(h.id, cifraToEdit.id);
+        } else if (!isSelected && isAlreadyIn) {
+          useAppStore.getState().removeCifraFromHinario(h.id, cifraToEdit.id);
         }
       });
       toast.success("Cifra atualizada com sucesso!");

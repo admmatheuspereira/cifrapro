@@ -24,7 +24,6 @@ export default function Home() {
           />
         </div>
         <p className="text-muted-foreground">Olá, {displayName}</p>
-        <p className="text-muted-foreground mt-1">Pronto para tocar?</p>
       </header>
 
       <div className="grid grid-cols-2 gap-4 mb-8">

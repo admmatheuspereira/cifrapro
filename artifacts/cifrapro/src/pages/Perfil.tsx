@@ -15,13 +15,12 @@ export default function Perfil() {
   const [photoUrl, setPhotoUrl] = useState(profile.photoUrl);
 
   const [importModalOpen, setImportModalOpen] = useState(false);
-  const [importPayload, setImportPayload] = useState<{cifras: any[], hinarios: any[]} | null>(null);
+  const [importPayload, setImportPayload] = useState<{ cifras: any[]; hinarios: any[]; profile?: any } | null>(null);
   const [resetModalOpen, setResetModalOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dataInputRef = useRef<HTMLInputElement>(null);
 
-  // Check URL for shared data
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const dataParam = searchParams.get('data');
@@ -70,7 +69,7 @@ export default function Perfil() {
         const parsed = JSON.parse(text);
 
         if (Array.isArray(parsed.cifras) && Array.isArray(parsed.hinarios)) {
-          setImportPayload({ cifras: parsed.cifras, hinarios: parsed.hinarios });
+          setImportPayload({ cifras: parsed.cifras, hinarios: parsed.hinarios, profile: parsed.profile });
           setImportModalOpen(true);
         } else {
           toast.error("Arquivo inválido. Formato não reconhecido.");
@@ -88,7 +87,7 @@ export default function Perfil() {
 
   const confirmImport = () => {
     if (importPayload) {
-      importData(importPayload.cifras, importPayload.hinarios);
+      importData(importPayload.cifras, importPayload.hinarios, importPayload.profile);
       toast.success("Dados importados com sucesso!");
       setImportModalOpen(false);
       setImportPayload(null);
@@ -96,7 +95,7 @@ export default function Perfil() {
   };
 
   const handleShare = () => {
-    const link = generateShareLink(cifras, hinarios);
+    const link = generateShareLink(cifras, hinarios, profile);
     navigator.clipboard.writeText(link)
       .then(() => toast.success("Link copiado para a área de transferência!"))
       .catch(() => toast.error("Erro ao copiar link."));
@@ -117,7 +116,7 @@ export default function Perfil() {
   return (
     <div className="min-h-full overflow-y-auto pb-24 md:pb-8 px-4 md:px-8 max-w-2xl mx-auto flex flex-col">
       <header className="mb-8 mt-4">
-        <h1 className="text-3xl font-serif font-bold text-foreground">Perfil</h1>
+        <h1 className="text-3xl font-bold text-foreground">Perfil</h1>
         <p className="text-muted-foreground mt-1">Gerencie sua conta e seus dados</p>
       </header>
 
@@ -157,7 +156,6 @@ export default function Perfil() {
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Ex: João Silva"
                 className="bg-background min-h-[48px]"
                 data-testid="input-profile-name"
               />
@@ -215,7 +213,7 @@ export default function Perfil() {
 
           <div className="space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Button variant="outline" className="w-full h-14 justify-start px-4" onClick={() => downloadJson(cifras, hinarios)} data-testid="button-backup-download">
+              <Button variant="outline" className="w-full h-14 justify-start px-4" onClick={() => downloadJson(cifras, hinarios, profile)} data-testid="button-backup-download">
                 <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center mr-3 shrink-0">
                   <Download size={16} />
                 </div>
@@ -244,12 +242,12 @@ export default function Perfil() {
               />
             </div>
 
-            <Button variant="secondary" className="w-full h-14 justify-start px-4" onClick={handleShare} data-testid="button-backup-share">
-              <div className="w-8 h-8 rounded-full bg-background flex items-center justify-center mr-3 shrink-0">
+            <Button variant="outline" className="w-full h-14 justify-start px-4" onClick={handleShare} data-testid="button-backup-share">
+              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center mr-3 shrink-0">
                 <Share2 size={16} />
               </div>
               <div className="text-left">
-                <div className="font-medium text-foreground">Gerar Link Mágico</div>
+                <div className="font-medium">Gerar Link Mágico</div>
                 <div className="text-xs text-muted-foreground font-normal">Compartilhe ou transfira para outro celular</div>
               </div>
             </Button>
@@ -323,6 +321,7 @@ export default function Perfil() {
         onConfirm={handleResetAll}
         confirmLabel="Apagar tudo"
         cancelLabel="Cancelar"
+        confirmDestructive
       >
         <div className="space-y-3">
           <p className="text-muted-foreground">

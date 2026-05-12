@@ -160,7 +160,6 @@ export default function CifraEditor() {
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ex: Teu Amor Não Falha"
               className="bg-card min-h-[48px]"
               data-testid="input-editor-title"
             />
@@ -174,7 +173,6 @@ export default function CifraEditor() {
               id="artist"
               value={artist}
               onChange={(e) => setArtist(e.target.value)}
-              placeholder="Ex: Nivea Soares"
               className="bg-card min-h-[48px]"
               data-testid="input-editor-artist"
             />
@@ -274,7 +272,6 @@ export default function CifraEditor() {
           id="content"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="[Intro] C  G  Am  F&#10;&#10;[Verso]&#10;C            G&#10;Nada vai me separar..."
           className="flex-1 resize-none bg-card font-mono text-sm leading-relaxed p-4 h-[300px] md:h-full"
           data-testid="textarea-editor-content"
         />
@@ -302,7 +299,6 @@ export default function CifraEditor() {
           <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="[Intro] C  G  Am  F&#10;&#10;[Verso]&#10;C            G&#10;Nada vai me separar..."
             className="flex-1 resize-none bg-background font-mono text-sm leading-relaxed p-4 border-0 rounded-none focus-visible:ring-0"
             autoFocus
             data-testid="textarea-editor-content-expanded"

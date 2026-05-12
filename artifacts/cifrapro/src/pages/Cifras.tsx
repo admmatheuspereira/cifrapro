@@ -49,7 +49,6 @@ export default function Cifras() {
         </div>
         <Input
           type="text"
-          placeholder="Buscar por título ou artista..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-10 h-12 bg-card border-border min-h-[48px]"

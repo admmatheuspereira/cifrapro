@@ -121,7 +121,6 @@ export default function Hinarios() {
           <p className="text-sm text-muted-foreground">Dê um nome para sua nova coleção de cifras.</p>
           <Input
             autoFocus
-            placeholder="Ex: Culto de Domingo"
             value={newHinarioName}
             onChange={(e) => setNewHinarioName(e.target.value)}
             className="min-h-[48px]"

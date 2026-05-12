@@ -11,6 +11,7 @@ interface ModalProps {
   onConfirm?: () => void;
   confirmLabel?: string;
   cancelLabel?: string;
+  confirmDestructive?: boolean;
 }
 
 export function Modal({
@@ -21,6 +22,7 @@ export function Modal({
   onConfirm,
   confirmLabel = "Confirmar",
   cancelLabel = "Cancelar",
+  confirmDestructive = false,
 }: ModalProps) {
   useEffect(() => {
     if (isOpen) {
@@ -47,17 +49,13 @@ export function Modal({
             onClick={onClose}
           />
 
-          {/*
-            On mobile: anchored to top with safe padding so keyboard doesn't cover it.
-            On sm+: centered as usual.
-          */}
-          <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center pointer-events-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none p-4">
             <motion.div
               initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="pointer-events-auto w-full max-w-sm sm:max-w-md mx-4 mt-8 sm:mt-0 flex flex-col"
+              className="pointer-events-auto w-full max-w-sm sm:max-w-md flex flex-col"
               style={{ maxHeight: "90dvh" }}
             >
               <div
@@ -87,9 +85,19 @@ export function Modal({
                     {cancelLabel}
                   </Button>
                   {onConfirm && (
-                    <Button onClick={onConfirm} data-testid="button-modal-confirm">
-                      {confirmLabel}
-                    </Button>
+                    confirmDestructive ? (
+                      <button
+                        onClick={onConfirm}
+                        className="bg-red-600 hover:bg-red-700 text-white rounded-xl px-6 py-2 text-sm font-medium transition-colors"
+                        data-testid="button-modal-confirm"
+                      >
+                        {confirmLabel}
+                      </button>
+                    ) : (
+                      <Button onClick={onConfirm} data-testid="button-modal-confirm">
+                        {confirmLabel}
+                      </Button>
+                    )
                   )}
                 </div>
               </div>

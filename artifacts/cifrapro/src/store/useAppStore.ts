@@ -18,7 +18,7 @@ interface AppState {
   removeCifraFromHinario: (hinarioId: string, cifraId: string) => void;
 
   updateProfile: (profile: Partial<UserProfile>) => void;
-  importData: (cifras: Cifra[], hinarios: Hinario[]) => void;
+  importData: (cifras: Cifra[], hinarios: Hinario[], profile?: Partial<UserProfile>) => void;
   resetAllData: () => void;
 }
 
@@ -89,7 +89,7 @@ export const useAppStore = create<AppState>()(
         profile: { ...state.profile, ...updates }
       })),
 
-      importData: (cifras, hinarios) => set((state) => {
+      importData: (cifras, hinarios, profile) => set((state) => {
         const existingCifraIds = new Set(state.cifras.map(c => c.id));
         const newCifras = cifras.filter(c => !existingCifraIds.has(c.id));
 
@@ -98,7 +98,8 @@ export const useAppStore = create<AppState>()(
 
         return {
           cifras: [...state.cifras, ...newCifras],
-          hinarios: [...state.hinarios, ...newHinarios]
+          hinarios: [...state.hinarios, ...newHinarios],
+          ...(profile ? { profile: { ...state.profile, ...profile } } : {}),
         };
       }),
 

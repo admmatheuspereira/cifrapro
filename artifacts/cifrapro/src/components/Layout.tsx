@@ -36,7 +36,11 @@ export function Layout({ children }: LayoutProps) {
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-[220px] flex-col border-r border-border bg-sidebar h-full shrink-0">
         <div className="p-6">
-          <h1 className="text-2xl font-sans font-bold tracking-tight text-primary">CifraPro</h1>
+          <img
+            src={profile.theme === "dark" ? "/cf2.png" : "/cf1.png"}
+            alt="CifraPro"
+            className="h-8 w-auto"
+          />
         </div>
         <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
           {navItems.map((item) => {

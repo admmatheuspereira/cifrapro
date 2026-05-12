@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=neue-machina@400,500,800&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
@@ -116,8 +116,8 @@
   --chart-4: 207 52% 16%;
   --chart-5: 186 22% 70%;
 
-  --app-font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', system-ui, sans-serif;
-  --app-font-serif: 'Playfair Display', serif;
+  --app-font-sans: 'Neue Machina', system-ui, sans-serif;
+  --app-font-serif: 'Neue Machina', system-ui, sans-serif;
   --app-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --radius: 0.625rem;
 }

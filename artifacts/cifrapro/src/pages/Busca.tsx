@@ -48,7 +48,6 @@ export default function Busca() {
           <Input
             autoFocus
             type="text"
-            placeholder="Buscar cifras, artistas ou hinários..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="pl-10 h-14 bg-card border-border text-lg rounded-xl"

@@ -1,0 +1,249 @@
+## CifraPro — Ajustes de UI/UX (Prompt Completo)
+
+Aplique TODAS as mudanças abaixo no projeto CifraPro. Não altere lógica de dados, apenas UI/UX e assets.
+
+---
+
+### 1. TIPOGRAFIA — Neue Machina (única família permitida)
+
+Instale a fonte Neue Machina via @fontsource ou importe do Google Fonts/CDN se disponível. Se não houver CDN, use a importação via CSS @font-face apontando para os arquivos locais em /public/fonts/:
+- NeueMachina-Regular.woff2
+- NeueMachina-Medium.woff2  
+- NeueMachina-Ultrabold.woff2
+
+No arquivo global CSS (index.css ou globals.css), substitua TODA a configuração de fonte:
+
+```css
+@import url('...'); /* ou @font-face blocks */
+
+:root {
+  --font-sans: 'Neue Machina', system-ui, sans-serif;
+}
+
+* {
+  font-family: 'Neue Machina', system-ui, sans-serif;
+}
+
+body {
+  font-family: 'Neue Machina', system-ui, sans-serif;
+}
+```
+
+No tailwind.config (se existir), adicione:
+```js
+theme: {
+  extend: {
+    fontFamily: {
+      sans: ['Neue Machina', 'system-ui', 'sans-serif'],
+    }
+  }
+}
+```
+
+---
+
+### 2. LOGO E FAVICON
+
+Coloque os arquivos fornecidos em /public/:
+- cf1.png → logo para tema claro
+- cf2.png → logo para tema escuro  
+- icon.png → favicon e ícone PWA
+
+No index.html, atualize:
+```html
+<link rel="icon" type="image/png" href="/icon.png" />
+<link rel="apple-touch-icon" href="/icon.png" />
+```
+
+No vite.config.ts, dentro do VitePWA manifest, atualize os icons:
+```ts
+icons: [
+  { src: '/icon.png', sizes: '192x192', type: 'image/png' },
+  { src: '/icon.png', sizes: '512x512', type: 'image/png' },
+],
+```
+
+No componente de Header/Navbar onde aparece a logo, use lógica de tema:
+```tsx
+const { theme } = useTheme(); // ou equivalente no Zustand store
+<img 
+  src={theme === 'dark' ? '/cf2.png' : '/cf1.png'} 
+  alt="CifraPro" 
+  className="h-8 w-auto"
+/>
+```
+
+---
+
+### 3. BACKUP — Salvar também dados do Perfil
+
+Nas funções de exportação/importação de backup (provavelmente em useStore ou profileStore), garanta que o JSON exportado inclua TODOS os dados:
+
+```ts
+// Exportação — incluir perfil completo
+const backupData = {
+  cifras: store.cifras,
+  hinarios: store.hinarios,
+  profile: {
+    name: store.profile.name,
+    photo: store.profile.photo, // base64 se for imagem local
+    theme: store.profile.theme,
+    instrument: store.profile.instrument,
+    // todos os demais campos do perfil
+  },
+  exportedAt: new Date().toISOString(),
+  version: '1.0',
+};
+
+// Importação — restaurar perfil também
+if (importedData.profile) {
+  store.setProfile(importedData.profile);
+}
+```
+
+O "Gerar Link Mágico" deve codificar o mesmo objeto completo (incluindo perfil) em base64 ou comprimido via lz-string antes de gerar a URL/QR.
+
+---
+
+### 4. PLACEHOLDERS — Remover textos de exemplo dos inputs
+
+Em TODOS os componentes com campos de texto (CifraEditor, modal de Hinário, Perfil, qualquer formulário), remova o atributo `placeholder` ou deixe-o vazio:
+
+```tsx
+// ANTES
+<input placeholder="Ex: Culto de Domingo" />
+<input placeholder="Nome da cifra" />
+<input placeholder="Autor" />
+<textarea placeholder="Cole a cifra aqui..." />
+
+// DEPOIS
+<input placeholder="" />
+// ou simplesmente remova o atributo placeholder
+<input />
+```
+
+---
+
+### 5. CORREÇÕES DE LAYOUT — Margens, Centralização e Cores
+
+#### 5a. Padding lateral global
+No container principal de cada página/tela, garanta padding horizontal consistente:
+```tsx
+// Todas as páginas devem ter no mínimo:
+className="px-4 py-4" // mobile
+// ou no layout wrapper global adicione padding-x
+```
+
+#### 5b. Cards de Cifras — Badge de Tom
+O badge circular com a letra do tom (A, C, etc.) está sendo cortado à direita. Corrija:
+```tsx
+// No card de cifra, garanta que o container pai tem:
+className="flex items-center justify-between pr-4" // pr-4 para não cortar o badge
+// O badge deve ter:
+className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
+```
+
+#### 5c. Tela de Hinários — Empty State
+A tela de Hinários está completamente branca quando vazia. Adicione um empty state:
+```tsx
+{hinarios.length === 0 && (
+  <div className="flex flex-col items-center justify-center flex-1 gap-4 py-20 text-center">
+    <BookOpen className="w-16 h-16 text-muted-foreground opacity-40" />
+    <h3 className="text-lg font-medium text-muted-foreground">Nenhum hinário ainda</h3>
+    <p className="text-sm text-muted-foreground opacity-70">
+      Toque no + para criar seu primeiro hinário
+    </p>
+  </div>
+)}
+```
+
+#### 5d. Botão "Apagar tudo" — cor destrutiva
+O botão de confirmação de ação destrutiva está azul. Deve ser vermelho:
+```tsx
+// Botão "Apagar tudo" no modal de Restaurar Aplicativo:
+className="bg-red-600 hover:bg-red-700 text-white rounded-xl px-6 py-3"
+// Remova qualquer variant="default" ou className azul
+```
+
+#### 5e. Bottom Navigation — cor consistente
+A cor ativa do bottom nav está alternando entre roxo e azul dependendo da tela. Defina UMA cor primária e aplique em todo o app. Escolha a cor do brand (provavelmente o roxo/índigo das primeiras telas) e aplique:
+```css
+/* No CSS global ou no componente BottomNav */
+.nav-active {
+  color: var(--color-primary); /* defina --color-primary como a cor escolhida */
+}
+```
+No tailwind, garanta que `text-primary` aponta para a mesma cor em todo o app.
+
+#### 5f. Card "Gerar Link Mágico" — cor incorreta
+O card está com background azul-escuro quebrando o padrão visual. Deve seguir o mesmo estilo dos outros cards de ação:
+```tsx
+// Remova o background customizado do card "Gerar Link Mágico"
+// Use o mesmo className dos cards "Baixar Backup" e "Importar Dados"
+className="flex items-center gap-4 p-4 rounded-xl border border-border bg-card hover:bg-accent cursor-pointer transition-colors"
+```
+
+#### 5g. Modal "Restaurar Aplicativo" — cortado no topo
+O modal está sendo cortado pela parte superior da viewport. Adicione scroll ou ajuste o posicionamento:
+```tsx
+// No overlay do modal:
+className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+// No container do modal:
+className="bg-background rounded-2xl p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto"
+```
+
+---
+
+### 6. PISCADA AO ABRIR MODAIS/PAINÉIS
+
+Esse flash acontece porque o componente está sendo montado/desmontado causando re-render. Corrija usando animação CSS com opacity em vez de condicional de montagem:
+
+#### Opção A — Se usar condicional `{isOpen && <Modal />}`:
+Substitua por sempre renderizar o modal mas controlar visibilidade via CSS:
+```tsx
+// Em vez de:
+{isOpen && <Modal />}
+
+// Use:
+<Modal isOpen={isOpen} />
+// Dentro do Modal:
+<div className={cn(
+  "fixed inset-0 z-50 transition-opacity duration-150",
+  isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+)}>
+```
+
+#### Opção B — Se já usa Radix UI Dialog/Sheet:
+Verifique se o `forceMount` está sendo usado e adicione animação:
+```tsx
+<DialogContent 
+  className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-150"
+>
+```
+
+#### Para TODOS os modais, drawers e sheets do app:
+Adicione no CSS global:
+```css
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+[data-state="open"] {
+  animation: fadeIn 150ms ease-out;
+}
+```
+
+---
+
+### RESUMO DO QUE DEVE SER ALTERADO:
+1. Fonte → apenas Neue Machina (Regular, Medium, Ultrabold) em todo o app
+2. Logo → cf1.png (claro) / cf2.png (escuro), favicon → icon.png
+3. Backup → exportar/importar dados de perfil junto com cifras e hinários
+4. Placeholders → remover todos os textos de exemplo dos inputs
+5. Layout → padding lateral, badge não cortado, empty state em Hinários
+6. Cores → botão destrutivo vermelho, nav consistente, card Link Mágico sem bg azul
+7. Modal Restaurar → não cortado no topo (max-h + overflow-y-auto)
+8. Flash → substituir montagem condicional por animação de opacity em todos os modais
+
+Não altere nenhuma lógica de negócio, stores, algoritmos ou rotas. Apenas UI.

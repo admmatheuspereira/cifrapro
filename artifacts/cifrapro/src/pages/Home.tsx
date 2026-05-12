@@ -23,7 +23,7 @@ export default function Home() {
             className="h-7 w-auto"
           />
         </div>
-        <h1 className="text-3xl font-bold text-foreground">Olá, {displayName}</h1>
+        <p className="text-muted-foreground">Olá, {displayName}</p>
         <p className="text-muted-foreground mt-1">Pronto para tocar?</p>
       </header>
 

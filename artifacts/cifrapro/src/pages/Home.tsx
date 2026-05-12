@@ -5,7 +5,7 @@ import { Button } from "../components/ui/button";
 
 export default function Home() {
   const { profile, cifras, hinarios } = useAppStore();
-  
+
   const recentCifras = [...cifras]
     .sort((a, b) => b.updatedAt - a.updatedAt)
     .slice(0, 5);
@@ -15,7 +15,15 @@ export default function Home() {
   return (
     <div className="p-4 md:p-8 max-w-4xl mx-auto">
       <header className="mb-8 mt-4">
-        <h1 className="text-3xl font-serif font-bold text-foreground">Olá, {displayName}</h1>
+        {/* Logo — mobile only (desktop sidebar already shows it) */}
+        <div className="md:hidden mb-4">
+          <img
+            src={profile.theme === "dark" ? "/cf2.png" : "/cf1.png"}
+            alt="CifraPro"
+            className="h-7 w-auto"
+          />
+        </div>
+        <h1 className="text-3xl font-bold text-foreground">Olá, {displayName}</h1>
         <p className="text-muted-foreground mt-1">Pronto para tocar?</p>
       </header>
 
@@ -59,7 +67,7 @@ export default function Home() {
             </Link>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 pb-24">
             {recentCifras.map(cifra => (
               <Link key={cifra.id} href={`/cifras/${cifra.id}`}>
                 <div className="bg-card hover:bg-card/80 border border-border rounded-xl p-4 flex items-center justify-between cursor-pointer transition-colors" data-testid={`card-recent-cifra-${cifra.id}`}>
@@ -80,9 +88,9 @@ export default function Home() {
       </section>
 
       {/* Floating Action Button for Mobile */}
-      <div className="fixed bottom-[64px] right-4 md:hidden">
+      <div className="fixed bottom-[64px] right-4 md:hidden z-30">
         <Link href="/cifras/nova">
-          <Button size="icon" className="w-14 h-14 rounded-full shadow-lg" data-testid="fab-nova-cifra">
+          <Button size="icon" className="w-14 h-14 rounded-full shadow-lg shadow-primary/25" data-testid="fab-nova-cifra">
             <Plus size={24} />
           </Button>
         </Link>

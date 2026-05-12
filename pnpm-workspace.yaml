@@ -75,6 +75,28 @@ onlyBuiltDependencies:
   - unrs-resolver
 
 overrides:
+  # Security vulnerability fixes
+  # picomatch: >=4.0.4 fixes GHSA-c2c7-rcm5-vvqj and GHSA-3v7f-55p6-f55p
+  # micromatch@4.x requires picomatch "^3 || ^4"; bound to <5 to prevent future major pulls
+  "micromatch>picomatch": ">=4.0.4 <5"
+  "vite>picomatch": ">=4.0.4 <5"
+  "tinyglobby>picomatch": ">=4.0.4 <5"
+  # path-to-regexp: >=8.4.0 fixes GHSA-j3q9-mxjg-w52f and GHSA-27v5-c462-wpq7
+  path-to-regexp: ">=8.4.0 <9"
+  # lodash: >=4.18.0 fixes GHSA-r5fr-rjxr-66jc and GHSA-f23m-r3pf-42rh
+  lodash: ">=4.18.0 <5"
+  # fast-uri: >=3.1.2 fixes GHSA-q3j6-qgpj-74h6 and GHSA-v39h-62p7-jpjc
+  fast-uri: ">=3.1.2 <4"
+  # brace-expansion: >=2.0.3 fixes GHSA-f886-m6hf-6m8v
+  # Note: minimatch@10.x (used by filelist@1.0.6) requires brace-expansion@^5;
+  # minimatch@5.x/9.x require ^2.x. Use bounded 2.x range for 2.x consumers;
+  # minimatch@10.x naturally resolves to 5.x (not vulnerable) without override.
+  "minimatch>brace-expansion": ">=2.0.3 <3"
+  # yaml: >=2.8.3 fixes GHSA-48c2-rrv3-qjmp
+  yaml: ">=2.8.3 <3"
+  # postcss: >=8.5.10 fixes GHSA-qx2v-qp2m-jg93
+  postcss: ">=8.5.10 <9"
+
   # replit uses linux-x64 only, we can exclude all other platforms
   "esbuild>@esbuild/darwin-arm64": "-"
   "esbuild>@esbuild/darwin-x64": "-"

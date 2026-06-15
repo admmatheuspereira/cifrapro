@@ -227,7 +227,7 @@ export default function CifraDetail() {
             {cifra.artist && <p className="text-lg text-muted-foreground">{cifra.artist}</p>}
           </div>
 
-          <div className="font-mono text-base md:text-lg leading-relaxed">
+          <div className="font-mono text-xs sm:text-sm md:text-lg leading-relaxed">
             <CifraContent content={currentContent} />
           </div>
         </div>

@@ -221,7 +221,7 @@ export default function CifraDetail() {
         onTouchStart={handleUserScroll}
         onWheel={handleUserScroll}
       >
-        <div className="p-4 md:p-8 max-w-4xl mx-auto pb-16">
+        <div className="px-5 py-4 md:p-8 max-w-4xl mx-auto pb-16">
           <div className="mb-8">
             <h1 className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-2">{cifra.title}</h1>
             {cifra.artist && <p className="text-lg text-muted-foreground">{cifra.artist}</p>}

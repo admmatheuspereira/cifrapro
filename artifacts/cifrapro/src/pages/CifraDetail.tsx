@@ -7,6 +7,55 @@ import { transposeContent, transposeKey } from "../utils/transpose";
 import { Button } from "../components/ui/button";
 import { Modal } from "../components/Modal";
 
+// Regex for a single chord token (e.g. Am, G, C7, F#m, Bm7b5, G/B)
+const CHORD_RE = /^[A-G][#b]?(m(aj7?|in)?|maj7?|dim7?|aug|sus[24]?|add[0-9]+|[0-9]+)?(b[0-9]+)?(\/[A-G][#b]?)?$/;
+
+function isChord(token: string): boolean {
+  return CHORD_RE.test(token);
+}
+
+function isChordLine(line: string): boolean {
+  const tokens = line.trim().split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return false;
+  const chordCount = tokens.filter(isChord).length;
+  // Consider it a chord line if at least half the tokens are chords
+  return chordCount > 0 && chordCount / tokens.length >= 0.5;
+}
+
+function CifraContent({ content }: { content: string }) {
+  const lines = content.split("\n");
+  return (
+    <div>
+      {lines.map((line, i) => {
+        if (line.trim() === "") {
+          return <div key={i} className="h-4" />;
+        }
+        if (isChordLine(line)) {
+          const tokens = line.split(/(\s+)/);
+          return (
+            <div key={i} className="whitespace-pre">
+              {tokens.map((token, j) =>
+                isChord(token) ? (
+                  <span key={j} style={{ color: "#00AFEF", fontWeight: "bold" }}>
+                    {token}
+                  </span>
+                ) : (
+                  <span key={j}>{token}</span>
+                )
+              )}
+            </div>
+          );
+        }
+        return (
+          <div key={i} className="whitespace-pre">
+            {line}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function CifraDetail() {
   const params = useParams();
   const [, setLocation] = useLocation();
@@ -178,8 +227,8 @@ export default function CifraDetail() {
             {cifra.artist && <p className="text-lg text-muted-foreground">{cifra.artist}</p>}
           </div>
 
-          <div className="font-mono text-base md:text-lg leading-relaxed whitespace-pre-wrap">
-            {currentContent}
+          <div className="font-mono text-base md:text-lg leading-relaxed">
+            <CifraContent content={currentContent} />
           </div>
         </div>
       </div>

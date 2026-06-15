@@ -125,7 +125,7 @@ export default function Cifras() {
         )}
       </div>
 
-      <div className="fixed bottom-[64px] right-4 md:hidden z-30">
+      <div className="fixed right-4 md:hidden z-30" style={{ bottom: "calc(env(safe-area-inset-bottom) + 80px)" }}>
         <Link href="/cifras/nova">
           <Button size="icon" className="w-14 h-14 rounded-full shadow-lg shadow-primary/25" data-testid="fab-nova-cifra">
             <Plus size={24} />

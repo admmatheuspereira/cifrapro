@@ -235,8 +235,8 @@ export default function CifraDetail() {
 
       {/* Floating Auto-scroll Control Bar */}
       {scrollActive && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl"
-          style={{ background: "#13293D", border: "1px solid rgba(255,255,255,0.08)", minWidth: 260, maxWidth: 340 }}
+        <div className="fixed left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl"
+          style={{ bottom: "calc(env(safe-area-inset-bottom) + 72px)", background: "#13293D", border: "1px solid rgba(255,255,255,0.08)", minWidth: 260, maxWidth: 340 }}
         >
           {/* Pause/Resume */}
           <button

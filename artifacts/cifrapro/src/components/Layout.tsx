@@ -68,7 +68,7 @@ export function Layout({ children }: LayoutProps) {
       {/* Main Content Area — leaves room for mobile nav */}
       <main
         className="flex-1 relative overflow-y-auto overflow-x-hidden md:pb-0"
-        style={{ paddingBottom: `${NAV_HEIGHT}px` }}
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 80px)" }}
       >
         {children}
       </main>

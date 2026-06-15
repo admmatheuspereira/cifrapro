@@ -32,14 +32,15 @@ function PageTransition({ children }: { children: React.ReactNode }) {
   const full = isFullHeightRoute(location);
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
+    <AnimatePresence mode="sync" initial={false}>
       <motion.div
         key={location}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.12, ease: "easeOut" }}
+        transition={{ duration: 0.1, ease: "easeOut" }}
         className={full ? "h-full" : "min-h-full"}
+        style={{ position: full ? undefined : "absolute", inset: full ? undefined : 0 }}
       >
         {children}
       </motion.div>

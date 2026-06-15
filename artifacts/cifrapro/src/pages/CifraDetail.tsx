@@ -217,7 +217,7 @@ export default function CifraDetail() {
       {/* Main Content Scrollable Area */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto w-full"
+        className="flex-1 overflow-y-auto overflow-x-hidden w-full"
         onTouchStart={handleUserScroll}
         onWheel={handleUserScroll}
       >
@@ -232,6 +232,9 @@ export default function CifraDetail() {
           </div>
         </div>
       </div>
+
+      {/* Spacer so scrollbar doesn't touch the bottom nav */}
+      <div className="shrink-0 h-[72px]" />
 
       {/* Floating Auto-scroll Control Bar */}
       {scrollActive && (

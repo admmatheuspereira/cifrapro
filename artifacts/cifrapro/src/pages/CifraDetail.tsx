@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useLocation } from "wouter";
-import { ArrowLeft, Edit2, Trash2, ArrowUp, ArrowDown, RotateCcw, Play, Pause, X } from "lucide-react";
+import { ArrowLeft, Edit2, Trash2, ArrowUp, ArrowDown, RotateCcw, Play, Pause, X, Turtle, Rabbit } from "lucide-react";
 import { toast } from "sonner";
 import { useAppStore } from "../store/useAppStore";
 import { transposeContent, transposeKey } from "../utils/transpose";
@@ -36,7 +36,7 @@ function CifraContent({ content }: { content: string }) {
             <div key={i} className="whitespace-pre">
               {tokens.map((token, j) =>
                 isChord(token) ? (
-                  <span key={j} style={{ color: "#00AFEF", fontWeight: "bold" }}>
+                  <span key={j} style={{ color: "#1B98E0", fontWeight: "bold" }}>
                     {token}
                   </span>
                 ) : (
@@ -236,7 +236,7 @@ export default function CifraDetail() {
       {/* Floating Auto-scroll Control Bar */}
       {scrollActive && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl"
-          style={{ background: "rgba(22,22,26,0.96)", border: "1px solid rgba(255,255,255,0.08)", minWidth: 260, maxWidth: 340 }}
+          style={{ background: "#13293D", border: "1px solid rgba(255,255,255,0.08)", minWidth: 260, maxWidth: 340 }}
         >
           {/* Pause/Resume */}
           <button
@@ -251,7 +251,7 @@ export default function CifraDetail() {
           <div className="w-px h-5 bg-white/15 shrink-0" />
 
           {/* Turtle */}
-          <span className="text-base shrink-0 opacity-60" role="img" aria-label="devagar">🐢</span>
+          <Turtle size={16} className="shrink-0 text-white/60" aria-label="devagar" />
 
           {/* Speed Slider */}
           <input
@@ -266,7 +266,7 @@ export default function CifraDetail() {
           />
 
           {/* Rabbit */}
-          <span className="text-base shrink-0 opacity-60" role="img" aria-label="rápido">🐇</span>
+          <Rabbit size={16} className="shrink-0 text-white/60" aria-label="rápido" />
 
           {/* Divider */}
           <div className="w-px h-5 bg-white/15 shrink-0" />

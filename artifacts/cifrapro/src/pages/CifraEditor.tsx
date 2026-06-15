@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useLocation } from "wouter";
-import { Upload, Save, X, Eye, Maximize2, Minimize2 } from "lucide-react";
+import { Upload, Save, X, Eye, Maximize2, Minimize2, Music } from "lucide-react";
 import { toast } from "sonner";
 import { useAppStore } from "../store/useAppStore";
 import { CHROMATIC_SCALE } from "../utils/transpose";
@@ -187,7 +187,7 @@ export default function CifraEditor() {
               Tom Original
               {keyAutoDetected && !manuallyEdited && (
                 <span className="text-xs text-muted-foreground italic font-normal">
-                  🎵 Detectado automaticamente
+                  <Music size={12} className="inline mr-1" />Detectado automaticamente
                 </span>
               )}
             </Label>

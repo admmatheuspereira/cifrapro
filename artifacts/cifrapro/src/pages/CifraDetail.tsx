@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useLocation } from "wouter";
-import { ArrowLeft, Edit2, Trash2, ArrowUp, ArrowDown, RotateCcw, Play, Pause } from "lucide-react";
+import { ArrowLeft, Edit2, Trash2, ArrowUp, ArrowDown, RotateCcw, Play, Pause, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAppStore } from "../store/useAppStore";
 import { transposeContent, transposeKey } from "../utils/transpose";
@@ -19,15 +19,16 @@ export default function CifraDetail() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Auto-scroll state
+  const [scrollActive, setScrollActive] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false);
-  const [scrollSpeed, setScrollSpeed] = useState<1 | 2 | 3>(1);
+  const [scrollSlider, setScrollSlider] = useState(35);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | null>(null);
   const scrollPauseTimerRef = useRef<NodeJS.Timeout | null>(null);
   const scrollAccRef = useRef(0);
 
-  // Map speed levels to px/frame values
-  const speedPxMap: Record<number, number> = { 1: 0.4, 2: 0.9, 3: 1.8 };
+  // Map slider (0-100) to px/frame — exponential feel
+  const sliderToPxPerFrame = (v: number) => 0.1 + (v / 100) * (v / 100) * 3.9;
 
   // Redirect if not found
   useEffect(() => {
@@ -47,7 +48,7 @@ export default function CifraDetail() {
   const startScrolling = useCallback(() => {
     if (!scrollContainerRef.current || !isScrolling) return;
 
-    const pxPerFrame = speedPxMap[scrollSpeed] ?? 0.4;
+    const pxPerFrame = sliderToPxPerFrame(scrollSlider);
     scrollAccRef.current += pxPerFrame;
 
     if (scrollAccRef.current >= 1) {
@@ -57,7 +58,7 @@ export default function CifraDetail() {
     }
 
     animationRef.current = requestAnimationFrame(startScrolling);
-  }, [isScrolling, scrollSpeed]);
+  }, [isScrolling, scrollSlider]);
 
   useEffect(() => {
     scrollAccRef.current = 0;
@@ -142,48 +143,24 @@ export default function CifraDetail() {
             </Button>
           </div>
 
-          {/* Auto-scroll Controls */}
-          <div className="flex items-center gap-1.5 bg-muted/50 rounded-lg p-1">
-            <Button
-              variant={isScrolling ? "default" : "secondary"}
-              className="h-7 px-3 text-xs font-medium"
-              onClick={() => setIsScrolling(!isScrolling)}
-              data-testid="button-autoscroll-toggle"
-            >
-              {isScrolling ? <Pause size={13} className="mr-1" /> : <Play size={13} className="mr-1" />}
-              Rolagem
-            </Button>
-            <div className="w-px h-5 bg-border" />
-            <div className="flex gap-0.5">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-7 text-xs px-2 ${scrollSpeed === 1 ? 'bg-background shadow-sm' : ''}`}
-                onClick={() => setScrollSpeed(1)}
-                data-testid="button-autoscroll-slow"
-              >
-                1x
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-7 text-xs px-2 ${scrollSpeed === 2 ? 'bg-background shadow-sm' : ''}`}
-                onClick={() => setScrollSpeed(2)}
-                data-testid="button-autoscroll-med"
-              >
-                2x
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-7 text-xs px-2 ${scrollSpeed === 3 ? 'bg-background shadow-sm' : ''}`}
-                onClick={() => setScrollSpeed(3)}
-                data-testid="button-autoscroll-fast"
-              >
-                3x
-              </Button>
-            </div>
-          </div>
+          {/* Auto-scroll Toggle */}
+          <Button
+            variant={scrollActive ? "default" : "secondary"}
+            className="h-7 px-3 text-xs font-medium"
+            onClick={() => {
+              if (scrollActive) {
+                setScrollActive(false);
+                setIsScrolling(false);
+              } else {
+                setScrollActive(true);
+                setIsScrolling(true);
+              }
+            }}
+            data-testid="button-autoscroll-toggle"
+          >
+            <Play size={13} className="mr-1" />
+            Rolagem
+          </Button>
 
         </div>
       </header>
@@ -206,6 +183,55 @@ export default function CifraDetail() {
           </div>
         </div>
       </div>
+
+      {/* Floating Auto-scroll Control Bar */}
+      {scrollActive && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl"
+          style={{ background: "rgba(22,22,26,0.96)", border: "1px solid rgba(255,255,255,0.08)", minWidth: 260, maxWidth: 340 }}
+        >
+          {/* Pause/Resume */}
+          <button
+            onClick={() => setIsScrolling(v => !v)}
+            className="flex items-center justify-center w-8 h-8 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+            aria-label={isScrolling ? "Pausar" : "Retomar"}
+          >
+            {isScrolling ? <Pause size={18} /> : <Play size={18} />}
+          </button>
+
+          {/* Divider */}
+          <div className="w-px h-5 bg-white/15 shrink-0" />
+
+          {/* Turtle */}
+          <span className="text-base shrink-0 opacity-60" role="img" aria-label="devagar">🐢</span>
+
+          {/* Speed Slider */}
+          <input
+            type="range"
+            min={5}
+            max={100}
+            value={scrollSlider}
+            onChange={e => setScrollSlider(Number(e.target.value))}
+            className="flex-1 h-1 accent-white cursor-pointer"
+            style={{ accentColor: "#ffffff" }}
+            aria-label="Velocidade de rolagem"
+          />
+
+          {/* Rabbit */}
+          <span className="text-base shrink-0 opacity-60" role="img" aria-label="rápido">🐇</span>
+
+          {/* Divider */}
+          <div className="w-px h-5 bg-white/15 shrink-0" />
+
+          {/* Close */}
+          <button
+            onClick={() => { setScrollActive(false); setIsScrolling(false); }}
+            className="flex items-center justify-center w-8 h-8 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+            aria-label="Fechar rolagem automática"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
 
       <Modal
         isOpen={showDeleteModal}

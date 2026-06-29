@@ -32,7 +32,18 @@ function Toggle({ enabled, onChange }: { enabled: boolean; onChange: (v: boolean
 
 export default function Perfil() {
   const { profile, updateProfile, cifras, hinarios, importData, resetAllData } = useAppStore();
-  const { user } = useAuth();
+  const { user: authUser, loading: authLoading } = useAuth();
+  const [user, setUser] = useState(authUser);
+
+  useEffect(() => {
+    if (authUser) {
+      setUser(authUser);
+    } else if (!authLoading) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) setUser(session.user);
+      });
+    }
+  }, [authUser, authLoading]);
 
   const [name, setName] = useState(profile.name);
   const [photoUrl, setPhotoUrl] = useState(profile.photoUrl);

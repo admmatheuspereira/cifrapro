@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AnimatePresence, motion } from "framer-motion";
+import { useEffect } from "react";
 
 import { Layout } from "./components/Layout";
 import { useAppStore } from "./store/useAppStore";
@@ -112,6 +113,21 @@ function AppRouter() {
   );
 }
 
+function ThemeSync() {
+  const { profile } = useAppStore();
+  useEffect(() => {
+    const root = document.documentElement;
+    if (profile.theme === 'light') {
+      root.classList.remove('dark');
+      root.classList.add('light');
+    } else {
+      root.classList.remove('light');
+      root.classList.add('dark');
+    }
+  }, [profile.theme]);
+  return null;
+}
+
 function ThemedToaster() {
   const { profile } = useAppStore();
   return (
@@ -127,6 +143,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <ThemeSync />
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
           <AuthProvider>
             <AppRouter />

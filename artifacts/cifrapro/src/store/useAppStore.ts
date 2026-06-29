@@ -54,7 +54,7 @@ async function getCurrentUserId(): Promise<string | null> {
 export const useAppStore = create<AppState>()((set, get) => ({
   cifras: [],
   hinarios: [],
-  profile: { name: "", photoUrl: null, theme: "dark" },
+  profile: { name: "", photoUrl: null, theme: "dark", notifNews: false, notifTips: false },
 
   loadFromSupabase: async (userId: string) => {
     const [cifrasRes, hinariosRes, profileRes] = await Promise.all([
@@ -71,12 +71,18 @@ export const useAppStore = create<AppState>()((set, get) => ({
       cifras,
       hinarios,
       profile: profileRow
-        ? { name: profileRow.name ?? "", photoUrl: profileRow.photo_url ?? null, theme: profileRow.theme ?? "dark" }
-        : { name: "", photoUrl: null, theme: "dark" },
+        ? {
+            name: profileRow.name ?? "",
+            photoUrl: profileRow.photo_url ?? null,
+            theme: profileRow.theme ?? "dark",
+            notifNews: profileRow.notif_news ?? false,
+            notifTips: profileRow.notif_tips ?? false,
+          }
+        : { name: "", photoUrl: null, theme: "dark", notifNews: false, notifTips: false },
     });
   },
 
-  clearData: () => set({ cifras: [], hinarios: [], profile: { name: "", photoUrl: null, theme: "dark" } }),
+  clearData: () => set({ cifras: [], hinarios: [], profile: { name: "", photoUrl: null, theme: "dark", notifNews: false, notifTips: false } }),
 
   addCifra: async (cifraData) => {
     const userId = await getCurrentUserId();
@@ -258,6 +264,8 @@ export const useAppStore = create<AppState>()((set, get) => ({
         name: profile.name,
         photo_url: profile.photoUrl,
         theme: profile.theme,
+        notif_news: profile.notifNews,
+        notif_tips: profile.notifTips,
       });
     });
   },
@@ -316,6 +324,6 @@ export const useAppStore = create<AppState>()((set, get) => ({
       supabase.from("profiles").delete().eq("user_id", userId),
     ]);
 
-    set({ cifras: [], hinarios: [], profile: { name: "", photoUrl: null, theme: "dark" } });
+    set({ cifras: [], hinarios: [], profile: { name: "", photoUrl: null, theme: "dark", notifNews: false, notifTips: false } });
   },
 }));

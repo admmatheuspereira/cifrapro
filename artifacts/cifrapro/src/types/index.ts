@@ -19,4 +19,6 @@ export interface UserProfile {
   name: string;
   photoUrl: string | null;
   theme: "dark" | "light";
+  notifNews: boolean;
+  notifTips: boolean;
 }

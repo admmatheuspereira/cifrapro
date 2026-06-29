@@ -60,10 +60,11 @@ export default function Perfil() {
 
   // Delete all data modal
   const [deleteDataOpen, setDeleteDataOpen] = useState(false);
+  const [deleteDataConfirmText, setDeleteDataConfirmText] = useState('');
 
-  // Notifications
-  const [notifNews, setNotifNews] = useState(false);
-  const [notifTips, setNotifTips] = useState(false);
+  // Notifications — initialized from profile (Supabase)
+  const [notifNews, setNotifNews] = useState(profile.notifNews ?? false);
+  const [notifTips, setNotifTips] = useState(profile.notifTips ?? false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dataInputRef = useRef<HTMLInputElement>(null);
@@ -206,6 +207,17 @@ export default function Perfil() {
     resetAllData();
     toast.success("Todos os dados foram apagados.");
     setDeleteDataOpen(false);
+    setDeleteDataConfirmText('');
+  };
+
+  const handleNotifNewsChange = (value: boolean) => {
+    setNotifNews(value);
+    updateProfile({ notifNews: value });
+  };
+
+  const handleNotifTipsChange = (value: boolean) => {
+    setNotifTips(value);
+    updateProfile({ notifTips: value });
   };
 
   return (
@@ -226,6 +238,12 @@ export default function Perfil() {
             </div>
 
             <div className="space-y-4">
+              {profile.name && (
+                <div>
+                  <p className="text-sm" style={{ color: '#8FA3B1' }}>Nome</p>
+                  <p className="font-medium" style={{ color: '#E9F0F1' }}>{profile.name}</p>
+                </div>
+              )}
               <div>
                 <p className="text-sm" style={{ color: '#8FA3B1' }}>Email</p>
                 <p className="font-medium" style={{ color: '#E9F0F1' }}>{user.email}</p>
@@ -364,7 +382,7 @@ export default function Perfil() {
                 <p className="text-sm font-medium" style={{ color: '#E9F0F1' }}>Novidades e atualizações do CifraPro</p>
                 <p className="text-xs mt-0.5" style={{ color: '#8FA3B1' }}>Fique por dentro das novas funcionalidades</p>
               </div>
-              <ToggleSwitch enabled={notifNews} onChange={setNotifNews} />
+              <ToggleSwitch enabled={notifNews} onChange={handleNotifNewsChange} />
             </div>
 
             <div className="h-px" style={{ backgroundColor: '#1E3A50' }} />
@@ -374,7 +392,7 @@ export default function Perfil() {
                 <p className="text-sm font-medium" style={{ color: '#E9F0F1' }}>Dicas de uso</p>
                 <p className="text-xs mt-0.5" style={{ color: '#8FA3B1' }}>Sugestões para aproveitar melhor o app</p>
               </div>
-              <ToggleSwitch enabled={notifTips} onChange={setNotifTips} />
+              <ToggleSwitch enabled={notifTips} onChange={handleNotifTipsChange} />
             </div>
           </div>
         </section>
@@ -646,7 +664,7 @@ export default function Perfil() {
         isOpen={deleteAccountOpen}
         onClose={() => { setDeleteAccountOpen(false); setDeleteConfirmText(''); }}
         title="Excluir Conta"
-        onConfirm={deleteConfirmText === 'EXCLUIR' ? handleDeleteAccount : undefined}
+        onConfirm={deleteConfirmText === 'EXCLUIR CONTA' ? handleDeleteAccount : undefined}
         confirmLabel={deletingAccount ? "Excluindo..." : "Excluir conta"}
         cancelLabel="Cancelar"
         confirmDestructive
@@ -657,12 +675,12 @@ export default function Perfil() {
           </p>
           <div className="space-y-1.5">
             <Label style={{ color: '#E9F0F1' }}>
-              Digite <strong>EXCLUIR</strong> para confirmar
+              Digite <strong>EXCLUIR CONTA</strong> para confirmar
             </Label>
             <Input
               value={deleteConfirmText}
               onChange={(e) => setDeleteConfirmText(e.target.value)}
-              placeholder="EXCLUIR"
+              placeholder="EXCLUIR CONTA"
               style={INPUT_STYLE}
             />
           </div>
@@ -672,9 +690,9 @@ export default function Perfil() {
       {/* === MODAL: Excluir todos os dados === */}
       <Modal
         isOpen={deleteDataOpen}
-        onClose={() => setDeleteDataOpen(false)}
+        onClose={() => { setDeleteDataOpen(false); setDeleteDataConfirmText(''); }}
         title="Excluir todos os dados"
-        onConfirm={handleDeleteAllData}
+        onConfirm={deleteDataConfirmText === 'EXCLUIR' ? handleDeleteAllData : undefined}
         confirmLabel="Apagar tudo"
         cancelLabel="Cancelar"
         confirmDestructive
@@ -686,6 +704,17 @@ export default function Perfil() {
           <p className="text-sm font-medium text-red-400">
             Esta ação não pode ser desfeita. Faça um backup antes de continuar.
           </p>
+          <div className="space-y-1.5">
+            <Label style={{ color: '#E9F0F1' }}>
+              Digite <strong>EXCLUIR</strong> para confirmar
+            </Label>
+            <Input
+              value={deleteDataConfirmText}
+              onChange={(e) => setDeleteDataConfirmText(e.target.value)}
+              placeholder="EXCLUIR"
+              style={INPUT_STYLE}
+            />
+          </div>
         </div>
       </Modal>
     </div>

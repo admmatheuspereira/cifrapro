@@ -1,0 +1,55 @@
+Implemente autenticação completa com Supabase no CifraPro.
+
+CREDENCIAIS:
+VITE_SUPABASE_URL=https://nsxstldxphxifkpkxzag.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_qKygDMpJr6mrNbFsUFtWtA_EMI-Kz2s
+
+INSTALAR:
+npm install @supabase/supabase-js
+
+1. SETUP
+Crie src/lib/supabase.ts:
+import { createClient } from '@supabase/supabase-js'
+export const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+)
+
+2. AUTENTICAÇÃO
+Crie src/pages/Auth.tsx com:
+- Aba Login e aba Cadastro
+- Login com email/senha
+- Cadastro com email/senha + confirmação de senha
+- Botão "Entrar com Google" (ícone do lucide-react: Chrome) 
+- Após cadastro: mostrar mensagem "Verifique seu email para confirmar a conta"
+- Visual usando a paleta: fundo #0C1B27, card #13293D, botão primário #1B98E0, texto #E9F0F1
+- Sem emojis, apenas ícones lucide-react
+
+3. PROTEÇÃO DE ROTAS
+- Se usuário não autenticado tentar acessar qualquer rota: redireciona para /auth
+- Se autenticado e acessar /auth: redireciona para /
+
+4. MIGRAÇÃO DO LOCALSTORAGE
+No primeiro login do usuário (verificar se tabela cifras está vazia para esse user_id):
+- Ler localStorage key "cifrapro-storage" ou similar onde Zustand salva os dados
+- Migrar todas as cifras para tabela `cifras` no Supabase com user_id = auth.uid()
+- Migrar todos os hinários para tabela `hinarios` no Supabase com user_id = auth.uid()
+- Migrar perfil para tabela `profiles` no Supabase com user_id = auth.uid()
+- Após migração bem-sucedida: limpar localStorage
+- Mostrar toast "Seus dados foram migrados com sucesso"
+
+5. STORE — SUBSTITUIR LOCALSTORAGE POR SUPABASE
+Atualize o store Zustand para:
+- Carregar cifras/hinários do Supabase ao iniciar (filtrado por user_id via RLS)
+- Salvar/editar/deletar cifras e hinários direto no Supabase
+- Manter estado local em memória para performance (sync otimista)
+
+6. PERFIL
+Na página de perfil mostrar:
+- Nome e email do usuário logado (de auth.user)
+- Botão "Sair" com ícone LogOut do lucide-react que faz supabase.auth.signOut()
+
+Schema das tabelas já criado no Supabase:
+- cifras: id, user_id, title, artist, key, content, created_at, updated_at
+- hinarios: id, user_id, name, cifra_ids (uuid[]), created_at  
+- profiles: user_id, name, photo_url, theme

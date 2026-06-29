@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
-import { User, Download, Upload, Share2, Save, Camera, Sun, Moon, AlertTriangle, Trash2 } from "lucide-react";
+import { User, Download, Upload, Share2, Save, Camera, Sun, Moon, AlertTriangle, Trash2, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { useAppStore } from "../store/useAppStore";
+import { useAuth } from "../lib/auth";
+import { supabase } from "../lib/supabase";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -10,6 +12,7 @@ import { generateShareLink, downloadJson, decodeBackup } from "../utils/backup";
 
 export default function Perfil() {
   const { profile, updateProfile, cifras, hinarios, importData, resetAllData } = useAppStore();
+  const { user } = useAuth();
 
   const [name, setName] = useState(profile.name);
   const [photoUrl, setPhotoUrl] = useState(profile.photoUrl);
@@ -124,6 +127,11 @@ export default function Perfil() {
     setResetModalOpen(false);
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("Sessão encerrada");
+  };
+
   return (
     <div className="min-h-full overflow-y-auto pb-24 md:pb-8 px-4 md:px-8 max-w-2xl mx-auto flex flex-col">
       <header className="mb-8 mt-4">
@@ -132,6 +140,27 @@ export default function Perfil() {
       </header>
 
       <div className="space-y-6 pb-24 md:pb-8">
+        {/* Account */}
+        {user && (
+          <section className="bg-card border border-border rounded-xl p-6">
+            <h2 className="text-lg font-semibold mb-4">Conta</h2>
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="font-medium text-foreground">{user.email}</p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={handleSignOut}
+                className="flex items-center gap-2 border-destructive/50 hover:bg-destructive/10 hover:border-destructive text-destructive"
+              >
+                <LogOut size={16} />
+                Sair
+              </Button>
+            </div>
+          </section>
+        )}
+
         {/* Personal Info */}
         <section className="bg-card border border-border rounded-xl p-6">
           <h2 className="text-lg font-semibold mb-5">Informações Pessoais</h2>

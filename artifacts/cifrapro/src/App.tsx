@@ -1,4 +1,4 @@
-import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { Layout } from "./components/Layout";
 import { useAppStore } from "./store/useAppStore";
+import { AuthProvider, useAuth } from "./lib/auth";
 import Home from "./pages/Home";
 import Cifras from "./pages/Cifras";
 import CifraEditor from "./pages/CifraEditor";
@@ -14,12 +15,11 @@ import Hinarios from "./pages/Hinarios";
 import HinarioDetail from "./pages/HinarioDetail";
 import Busca from "./pages/Busca";
 import Perfil from "./pages/Perfil";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/not-found";
 
 const queryClient = new QueryClient();
 
-// Pages that need full-viewport height (they manage their own scroll internally)
-const FULL_HEIGHT_ROUTES = ["/cifras/", "/hinarios/"];
 function isFullHeightRoute(location: string) {
   return (
     (location.startsWith("/cifras/") && !location.endsWith("/editar") && location !== "/cifras/nova") ||
@@ -48,24 +48,63 @@ function PageTransition({ children }: { children: React.ReactNode }) {
   );
 }
 
+function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
+  const { user, loading } = useAuth();
+  const [location] = useLocation();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0C1B27' }}>
+        <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#1B98E0', borderTopColor: 'transparent' }} />
+      </div>
+    );
+  }
+
+  if (!user) return <Redirect to="/auth" />;
+  return <Component />;
+}
+
 function AppRouter() {
+  const { user, loading } = useAuth();
+  const [location] = useLocation();
+
+  if (loading && location !== '/auth') {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0C1B27' }}>
+        <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#1B98E0', borderTopColor: 'transparent' }} />
+      </div>
+    );
+  }
+
   return (
-    <Layout>
-      <PageTransition>
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/cifras" component={Cifras} />
-          <Route path="/cifras/nova" component={CifraEditor} />
-          <Route path="/cifras/:id" component={CifraDetail} />
-          <Route path="/cifras/:id/editar" component={CifraEditor} />
-          <Route path="/hinarios" component={Hinarios} />
-          <Route path="/hinarios/:id" component={HinarioDetail} />
-          <Route path="/busca" component={Busca} />
-          <Route path="/perfil" component={Perfil} />
-          <Route component={NotFound} />
-        </Switch>
-      </PageTransition>
-    </Layout>
+    <Switch>
+      <Route path="/auth">
+        {user ? <Redirect to="/" /> : <Auth />}
+      </Route>
+
+      <Route>
+        {!user && !loading ? (
+          <Redirect to="/auth" />
+        ) : (
+          <Layout>
+            <PageTransition>
+              <Switch>
+                <Route path="/" component={Home} />
+                <Route path="/cifras" component={Cifras} />
+                <Route path="/cifras/nova" component={CifraEditor} />
+                <Route path="/cifras/:id" component={CifraDetail} />
+                <Route path="/cifras/:id/editar" component={CifraEditor} />
+                <Route path="/hinarios" component={Hinarios} />
+                <Route path="/hinarios/:id" component={HinarioDetail} />
+                <Route path="/busca" component={Busca} />
+                <Route path="/perfil" component={Perfil} />
+                <Route component={NotFound} />
+              </Switch>
+            </PageTransition>
+          </Layout>
+        )}
+      </Route>
+    </Switch>
   );
 }
 
@@ -85,7 +124,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <AppRouter />
+          <AuthProvider>
+            <AppRouter />
+          </AuthProvider>
         </WouterRouter>
         <ThemedToaster />
       </TooltipProvider>

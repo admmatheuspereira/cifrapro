@@ -17,6 +17,7 @@ import HinarioDetail from "./pages/HinarioDetail";
 import Busca from "./pages/Busca";
 import Perfil from "./pages/Perfil";
 import Auth from "./pages/Auth";
+import AuthCallback from "./pages/AuthCallback";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/not-found";
 
@@ -82,6 +83,8 @@ function AppRouter() {
       <Route path="/auth">
         {user ? <Redirect to="/" /> : <Auth />}
       </Route>
+
+      <Route path="/auth/callback" component={AuthCallback} />
 
       <Route path="/reset-password">
         <ResetPassword />

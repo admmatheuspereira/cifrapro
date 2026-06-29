@@ -121,7 +121,7 @@ export default function Auth() {
   async function handleGoogle() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: 'https://cifrapro.vercel.app' }
+      options: { redirectTo: 'https://cifrapro.vercel.app/auth/callback' }
     })
     if (error) toast.error(error.message)
   }

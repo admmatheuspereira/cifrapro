@@ -104,26 +104,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { loadFromSupabase, clearData } = useAppStore()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        handleUserSignedIn(session.user.id)
-      } else {
-        setLoading(false)
-      }
-    })
+    // Track whether we've already run the initial data load, to prevent the
+    // double-call that happens when both INITIAL_SESSION and SIGNED_IN fire
+    // after a Google OAuth redirect (Supabase v2 fires both events).
+    let initialized = false
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session)
+        setUser(session?.user ?? null)
 
-      if (event === 'SIGNED_IN' && session?.user) {
-        await handleUserSignedIn(session.user.id)
-      } else if (event === 'SIGNED_OUT') {
-        clearData()
+        if (event === 'INITIAL_SESSION') {
+          // Fires immediately on subscribe — covers page refresh and OAuth redirect
+          if (!initialized) {
+            initialized = true
+            if (session?.user) {
+              await handleUserSignedIn(session.user.id)
+            } else {
+              setLoading(false)
+            }
+          }
+        } else if (event === 'SIGNED_IN' && session?.user) {
+          // Fires after INITIAL_SESSION for OAuth logins; skip if already handled
+          if (!initialized) {
+            initialized = true
+            await handleUserSignedIn(session.user.id)
+          }
+        } else if (event === 'SIGNED_OUT') {
+          initialized = false
+          clearData()
+          setLoading(false)
+        }
       }
-    })
+    )
 
     return () => subscription.unsubscribe()
   }, [])

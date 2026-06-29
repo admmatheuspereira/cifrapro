@@ -16,6 +16,7 @@ import HinarioDetail from "./pages/HinarioDetail";
 import Busca from "./pages/Busca";
 import Perfil from "./pages/Perfil";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/not-found";
 
 const queryClient = new QueryClient();
@@ -50,7 +51,6 @@ function PageTransition({ children }: { children: React.ReactNode }) {
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, loading } = useAuth();
-  const [location] = useLocation();
 
   if (loading) {
     return (
@@ -68,7 +68,7 @@ function AppRouter() {
   const { user, loading } = useAuth();
   const [location] = useLocation();
 
-  if (loading && location !== '/auth') {
+  if (loading && location !== '/auth' && location !== '/reset-password') {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0C1B27' }}>
         <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#1B98E0', borderTopColor: 'transparent' }} />
@@ -80,6 +80,10 @@ function AppRouter() {
     <Switch>
       <Route path="/auth">
         {user ? <Redirect to="/" /> : <Auth />}
+      </Route>
+
+      <Route path="/reset-password">
+        <ResetPassword />
       </Route>
 
       <Route>

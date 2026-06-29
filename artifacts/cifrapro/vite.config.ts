@@ -13,6 +13,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
+      devOptions: { enabled: false },
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "icons/*.png"],
       manifest: {
         name: "CifraPro",

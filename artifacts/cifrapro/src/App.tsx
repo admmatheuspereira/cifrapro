@@ -54,8 +54,8 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0C1B27' }}>
-        <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#1B98E0', borderTopColor: 'transparent' }} />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -70,8 +70,8 @@ function AppRouter() {
 
   if (loading && location !== '/auth' && location !== '/reset-password') {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0C1B27' }}>
-        <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#1B98E0', borderTopColor: 'transparent' }} />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
       </div>
     );
   }

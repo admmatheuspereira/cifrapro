@@ -109,6 +109,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // after a Google OAuth redirect (Supabase v2 fires both events).
     let initialized = false
 
+    // Processa o hash OAuth da URL se existir
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setSession(session)
+        setUser(session.user)
+      }
+    })
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setSession(session)
@@ -125,11 +133,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
           }
         } else if (event === 'SIGNED_IN' && session?.user) {
-          // Fires after INITIAL_SESSION for OAuth logins; skip if already handled
-          if (!initialized) {
-            initialized = true
-            await handleUserSignedIn(session.user.id)
-          }
+          // Sempre executa no SIGNED_IN para cobrir OAuth redirect
+          await handleUserSignedIn(session.user.id)
         } else if (event === 'SIGNED_OUT') {
           initialized = false
           clearData()

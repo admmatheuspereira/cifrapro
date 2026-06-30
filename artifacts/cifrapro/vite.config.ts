@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { VitePWA } from "vite-plugin-pwa";
+// import { VitePWA } from "vite-plugin-pwa";
 import path from "path";
 
 const isReplit = process.env.REPL_ID !== undefined;
@@ -11,50 +11,50 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    VitePWA({
-      registerType: "autoUpdate",
-      devOptions: { enabled: false },
-      includeAssets: ["favicon.ico", "apple-touch-icon.png", "icons/*.png"],
-      manifest: {
-        name: "CifraPro",
-        short_name: "CifraPro",
-        description: "Gerenciador de cifras para músicos",
-        theme_color: "#1a1a2e",
-        background_color: "#0f0f1a",
-        display: "standalone",
-        orientation: "portrait",
-        scope: "/",
-        start_url: "/",
-        icons: [
-          {
-            src: "/icon.png",
-            sizes: "192x192",
-            type: "image/png"
-          },
-          {
-            src: "/icon.png",
-            sizes: "512x512",
-            type: "image/png"
-          }
-        ]
-      },
-      workbox: {
-        navigateFallback: 'index.html',
-        navigateFallbackDenylist: [/^\/auth\/callback/],
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "google-fonts-cache",
-              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              cacheableResponse: { statuses: [0, 200] }
-            }
-          }
-        ]
-      }
-    }),
+    // VitePWA({
+    //   registerType: "autoUpdate",
+    //   devOptions: { enabled: false },
+    //   includeAssets: ["favicon.ico", "apple-touch-icon.png", "icons/*.png"],
+    //   manifest: {
+    //     name: "CifraPro",
+    //     short_name: "CifraPro",
+    //     description: "Gerenciador de cifras para músicos",
+    //     theme_color: "#1a1a2e",
+    //     background_color: "#0f0f1a",
+    //     display: "standalone",
+    //     orientation: "portrait",
+    //     scope: "/",
+    //     start_url: "/",
+    //     icons: [
+    //       {
+    //         src: "/icon.png",
+    //         sizes: "192x192",
+    //         type: "image/png"
+    //       },
+    //       {
+    //         src: "/icon.png",
+    //         sizes: "512x512",
+    //         type: "image/png"
+    //       }
+    //     ]
+    //   },
+    //   workbox: {
+    //     navigateFallback: 'index.html',
+    //     navigateFallbackDenylist: [/^\/auth\/callback/],
+    //     globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+    //     runtimeCaching: [
+    //       {
+    //         urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+    //         handler: "CacheFirst",
+    //         options: {
+    //           cacheName: "google-fonts-cache",
+    //           expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+    //           cacheableResponse: { statuses: [0, 200] }
+    //         }
+    //       }
+    //     ]
+    //   }
+    // }),
     ...(isReplit && process.env.NODE_ENV !== "production"
       ? [
           (await import("@replit/vite-plugin-runtime-error-modal")).default(),

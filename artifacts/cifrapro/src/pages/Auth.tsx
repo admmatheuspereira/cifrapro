@@ -94,7 +94,9 @@ export default function Auth() {
     e.preventDefault()
     if (!email || !password) return
     setLoading(true)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    console.log('DEBUG: iniciando signInWithPassword')
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    console.log('DEBUG: resultado do login', { data, error })
     if (error) {
       toast.error(error.message === 'Invalid login credentials'
         ? 'Email ou senha incorretos'

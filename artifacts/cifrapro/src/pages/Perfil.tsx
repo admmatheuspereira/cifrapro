@@ -211,6 +211,10 @@ export default function Perfil() {
   const isLight = profile.theme === "light";
   const isDark = profile.theme === "dark";
 
+  console.log('DEBUG Perfil - user:', user)
+  console.log('DEBUG Perfil - authUser:', authUser)
+  console.log('DEBUG Perfil - authLoading:', authLoading)
+
   return (
     <div className="min-h-full overflow-y-auto pb-24 md:pb-8 px-4 md:px-8 max-w-2xl mx-auto flex flex-col">
       <header className="mb-8 mt-4">

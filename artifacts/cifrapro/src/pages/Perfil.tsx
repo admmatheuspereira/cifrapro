@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAppStore } from "../store/useAppStore";
-import { useAuth } from "../lib/auth";
+import { useAuth } from "../lib/useAuth";
 import { supabase } from "../lib/supabase";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";

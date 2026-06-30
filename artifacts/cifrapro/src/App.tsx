@@ -7,7 +7,8 @@ import { useEffect } from "react";
 
 import { Layout } from "./components/Layout";
 import { useAppStore } from "./store/useAppStore";
-import { AuthProvider, useAuth } from "./lib/auth";
+import { AuthProvider } from "./lib/auth";
+import { useAuth } from "./lib/useAuth";
 import Home from "./pages/Home";
 import Cifras from "./pages/Cifras";
 import CifraEditor from "./pages/CifraEditor";

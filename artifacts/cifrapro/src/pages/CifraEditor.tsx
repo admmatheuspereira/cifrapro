@@ -85,18 +85,15 @@ export default function CifraEditor() {
       toast.success("Cifra atualizada com sucesso!");
       setLocation(`/cifras/${cifraToEdit.id}`);
     } else {
-      addCifra({ title, artist, key, content });
-      if (selectedHinarioIds.length > 0) {
-        const latestCifras = useAppStore.getState().cifras;
-        const newCifra = latestCifras[0];
-        if (newCifra) {
+      addCifra({ title, artist, key, content }).then((newCifra) => {
+        if (newCifra && selectedHinarioIds.length > 0) {
           selectedHinarioIds.forEach(hinarioId => {
             addCifraToHinario(hinarioId, newCifra.id);
           });
         }
-      }
-      toast.success("Cifra criada com sucesso!");
-      setLocation("/cifras");
+        toast.success("Cifra criada com sucesso!");
+        setLocation("/cifras");
+      });
     }
   };
 

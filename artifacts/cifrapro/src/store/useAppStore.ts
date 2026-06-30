@@ -10,7 +10,7 @@ interface AppState {
   loadFromSupabase: (userId: string) => Promise<void>;
   clearData: () => void;
 
-  addCifra: (cifra: Omit<Cifra, "id" | "createdAt" | "updatedAt">) => Promise<void>;
+  addCifra: (cifra: Omit<Cifra, "id" | "createdAt" | "updatedAt">) => Promise<Cifra | undefined>;
   updateCifra: (id: string, cifra: Partial<Cifra>) => Promise<void>;
   deleteCifra: (id: string) => Promise<void>;
 
@@ -86,7 +86,7 @@ export const useAppStore = create<AppState>()((set, get) => ({
 
   addCifra: async (cifraData) => {
     const userId = await getCurrentUserId();
-    if (!userId) return;
+    if (!userId) return undefined;
 
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
@@ -106,7 +106,9 @@ export const useAppStore = create<AppState>()((set, get) => ({
     if (!error) {
       const newCifra: Cifra = { ...cifraData, id, createdAt: nowTs, updatedAt: nowTs };
       set((state) => ({ cifras: [newCifra, ...state.cifras] }));
+      return newCifra;
     }
+    return undefined;
   },
 
   updateCifra: async (id, updates) => {
@@ -148,6 +150,9 @@ export const useAppStore = create<AppState>()((set, get) => ({
       .eq("user_id", userId);
 
     if (!error) {
+      // Capture affected hinarios BEFORE updating local state
+      const affectedHinarios = get().hinarios.filter((h) => h.cifraIds.includes(id));
+
       set((state) => ({
         cifras: state.cifras.filter((c) => c.id !== id),
         hinarios: state.hinarios.map((h) => ({
@@ -156,12 +161,11 @@ export const useAppStore = create<AppState>()((set, get) => ({
         })),
       }));
 
-      const updatedHinarios = get().hinarios;
-      for (const h of updatedHinarios) {
-        if (!h.cifraIds.includes(id)) continue;
+      for (const h of affectedHinarios) {
+        const newIds = h.cifraIds.filter((cid) => cid !== id);
         await supabase
           .from("hinarios")
-          .update({ cifra_ids: h.cifraIds })
+          .update({ cifra_ids: newIds })
           .eq("id", h.id)
           .eq("user_id", userId);
       }

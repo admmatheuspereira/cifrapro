@@ -112,7 +112,7 @@ export default function Auth() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: 'https://cifrapro.vercel.app' }
+      options: { emailRedirectTo: window.location.origin }
     })
     if (error) { toast.error(error.message) } else { setRegistered(true) }
     setLoading(false)
@@ -121,7 +121,7 @@ export default function Auth() {
   async function handleGoogle() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: 'https://cifrapro.vercel.app/auth/callback' }
+      options: { redirectTo: `${window.location.origin}/auth/callback` }
     })
     if (error) toast.error(error.message)
   }
@@ -131,7 +131,7 @@ export default function Auth() {
     if (!recoveryEmail) return
     setLoading(true)
     const { error } = await supabase.auth.resetPasswordForEmail(recoveryEmail, {
-      redirectTo: 'https://cifrapro.vercel.app/reset-password'
+      redirectTo: `${window.location.origin}/reset-password`
     })
     if (error) { toast.error(error.message) } else { setRecoverySent(true) }
     setLoading(false)

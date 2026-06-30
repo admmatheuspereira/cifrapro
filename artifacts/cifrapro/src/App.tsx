@@ -70,7 +70,7 @@ function AppRouter() {
   const { user, loading } = useAuth();
   const [location] = useLocation();
 
-  if (loading && location !== '/auth' && location !== '/reset-password') {
+  if (loading && location !== '/auth' && location !== '/reset-password' && location !== '/auth/callback') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
@@ -80,11 +80,11 @@ function AppRouter() {
 
   return (
     <Switch>
+      <Route path="/auth/callback" component={AuthCallback} />
+
       <Route path="/auth">
         {user ? <Redirect to="/" /> : <Auth />}
       </Route>
-
-      <Route path="/auth/callback" component={AuthCallback} />
 
       <Route path="/reset-password">
         <ResetPassword />

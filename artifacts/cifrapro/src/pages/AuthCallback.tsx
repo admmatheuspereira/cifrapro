@@ -6,6 +6,7 @@ export default function AuthCallback() {
   const [, setLocation] = useLocation()
 
   useEffect(() => {
+    console.log('AuthCallback mounted', window.location.href)
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setLocation('/')

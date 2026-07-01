@@ -80,7 +80,7 @@ export default defineConfig({
   },
   server: {
     port: Number(process.env.PORT) || 3000,
-    strictPort: false,
+    strictPort: true,
     host: "0.0.0.0",
     allowedHosts: true,
   },

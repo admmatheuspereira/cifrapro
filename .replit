@@ -18,14 +18,14 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "CifraPro"
+args = "artifacts/cifrapro: web"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "API Server"
+args = "artifacts/api-server: API Server"
 
 [[workflows.workflow]]
-name = "CifraPro"
+name = "artifacts/cifrapro: web"
 author = "agent"
 
 [workflows.workflow.metadata]
@@ -33,11 +33,11 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "pnpm --filter cifrapro run dev"
-waitForPort = 3000
+args = "PORT=22851 pnpm --filter cifrapro run dev"
+waitForPort = 22851
 
 [[workflows.workflow]]
-name = "API Server"
+name = "artifacts/api-server: API Server"
 author = "agent"
 
 [workflows.workflow.metadata]
@@ -47,6 +47,19 @@ outputType = "console"
 task = "shell.exec"
 args = "PORT=8080 pnpm --filter @workspace/api-server run dev"
 waitForPort = 8080
+
+[[workflows.workflow]]
+name = "artifacts/mockup-sandbox: Component Preview Server"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "webview"
+isCanvasWorkflow = true
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/mockup-sandbox run dev"
+waitForPort = 5173
 
 [agent]
 stack = "PNPM_WORKSPACE"
@@ -61,20 +74,8 @@ localPort = 8080
 externalPort = 80
 
 [[ports]]
-localPort = 8081
-externalPort = 8081
-
-[[ports]]
-localPort = 8082
-externalPort = 3002
-
-[[ports]]
 localPort = 22851
 externalPort = 3000
-
-[[ports]]
-localPort = 22852
-externalPort = 3001
 
 [userenv]
 

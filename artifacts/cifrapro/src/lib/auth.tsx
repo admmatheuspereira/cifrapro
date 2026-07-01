@@ -2,8 +2,6 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import { useAppStore } from '../store/useAppStore'
-import { toast } from 'sonner'
-import { Cifra, Hinario, UserProfile } from '../types'
 
 interface AuthContextType {
   user: User | null
@@ -12,9 +10,7 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType>({
-  user: null,
-  session: null,
-  loading: true,
+  user: null, session: null, loading: true,
 })
 
 export function useAuth() {
@@ -42,12 +38,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session)
         setUser(session?.user ?? null)
         if (event === 'SIGNED_IN' && session?.user) {
-          setLoading(true)
           await loadFromSupabase(session.user.id)
           setLoading(false)
         }
         if (event === 'SIGNED_OUT') {
           clearData()
+          setLoading(false)
         }
       }
     )

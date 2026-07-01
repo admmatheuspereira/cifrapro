@@ -1,10 +1,52 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, Music } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { toast } from 'sonner'
 
 type Tab = 'login' | 'cadastro'
 type View = 'auth' | 'forgot'
+
+function getPasswordStrength(password: string): { level: 'fraca' | 'média' | 'forte'; score: number } {
+  if (!password) return { level: 'fraca', score: 0 }
+  let score = 0
+  if (password.length >= 8) score++
+  if (password.length >= 12) score++
+  if (/[A-Z]/.test(password)) score++
+  if (/[0-9]/.test(password)) score++
+  if (/[^A-Za-z0-9]/.test(password)) score++
+  if (score <= 2) return { level: 'fraca', score }
+  if (score <= 3) return { level: 'média', score }
+  return { level: 'forte', score }
+}
+
+function PasswordStrengthIndicator({ password }: { password: string }) {
+  if (!password) return null
+  const { level } = getPasswordStrength(password)
+  const colors = { fraca: '#EF4444', média: '#F59E0B', forte: '#22C55E' }
+  const widths = { fraca: '33%', média: '66%', forte: '100%' }
+  const labels = { fraca: 'Fraca', média: 'Média', forte: 'Forte' }
+
+  return (
+    <div className="mt-2 space-y-1">
+      <div className="h-1.5 w-full rounded-full" style={{ backgroundColor: '#E2E8F0' }}>
+        <div
+          className="h-1.5 rounded-full transition-all duration-300"
+          style={{ width: widths[level], backgroundColor: colors[level] }}
+        />
+      </div>
+      <p className="text-xs font-medium" style={{ color: colors[level] }}>
+        Força da senha: {labels[level]}
+      </p>
+    </div>
+  )
+}
+
+function validatePassword(password: string): string | null {
+  if (password.length < 8) return 'A senha deve ter pelo menos 8 caracteres'
+  if (!/[A-Z]/.test(password)) return 'A senha deve conter pelo menos 1 letra maiúscula'
+  if (!/[0-9]/.test(password)) return 'A senha deve conter pelo menos 1 número'
+  return null
+}
 
 function GoogleIcon() {
   return (
@@ -27,7 +69,6 @@ function RightPanel() {
         flexShrink: 0,
       }}
     >
-      {/* Decorative music icon */}
       <Music
         size={320}
         className="absolute"
@@ -49,7 +90,6 @@ function RightPanel() {
         }}
       />
 
-      {/* Content */}
       <div className="relative z-10 flex flex-col items-center text-center px-12">
         <img src="/cf2.png" alt="CifraPro" className="h-16 w-auto mb-8 drop-shadow-lg" />
         <h2 className="text-4xl font-bold text-white mb-4 leading-tight">
@@ -77,6 +117,9 @@ function RightPanel() {
   )
 }
 
+const LOCKOUT_DURATION = 60
+const MAX_ATTEMPTS = 5
+
 export default function Auth() {
   const [tab, setTab] = useState<Tab>('login')
   const [view, setView] = useState<View>('auth')
@@ -90,17 +133,55 @@ export default function Auth() {
   const [recoveryEmail, setRecoveryEmail] = useState('')
   const [recoverySent, setRecoverySent] = useState(false)
 
+  const [failedAttempts, setFailedAttempts] = useState(0)
+  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null)
+  const [countdown, setCountdown] = useState(0)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => {
+    if (lockoutUntil === null) return
+
+    const tick = () => {
+      const remaining = Math.ceil((lockoutUntil - Date.now()) / 1000)
+      if (remaining <= 0) {
+        setCountdown(0)
+        setLockoutUntil(null)
+        setFailedAttempts(0)
+        if (timerRef.current) clearInterval(timerRef.current)
+      } else {
+        setCountdown(remaining)
+      }
+    }
+
+    tick()
+    timerRef.current = setInterval(tick, 1000)
+    return () => { if (timerRef.current) clearInterval(timerRef.current) }
+  }, [lockoutUntil])
+
+  const isLockedOut = lockoutUntil !== null && Date.now() < lockoutUntil
+
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
-    if (!email || !password) return
+    if (!email || !password || isLockedOut) return
     setLoading(true)
-    console.log('DEBUG: iniciando signInWithPassword')
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-    console.log('DEBUG: resultado do login', { data, error })
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
-      toast.error(error.message === 'Invalid login credentials'
-        ? 'Email ou senha incorretos'
-        : error.message)
+      const newAttempts = failedAttempts + 1
+      if (newAttempts >= MAX_ATTEMPTS) {
+        setLockoutUntil(Date.now() + LOCKOUT_DURATION * 1000)
+        setFailedAttempts(newAttempts)
+        toast.error('Muitas tentativas. Aguarde 1 minuto.')
+      } else {
+        setFailedAttempts(newAttempts)
+        toast.error(
+          error.message === 'Invalid login credentials'
+            ? 'Email ou senha incorretos'
+            : error.message
+        )
+      }
+    } else {
+      setFailedAttempts(0)
+      setLockoutUntil(null)
     }
     setLoading(false)
   }
@@ -109,7 +190,8 @@ export default function Auth() {
     e.preventDefault()
     if (!email || !password || !confirmPassword) return
     if (password !== confirmPassword) { toast.error('As senhas não coincidem'); return }
-    if (password.length < 6) { toast.error('A senha deve ter ao menos 6 caracteres'); return }
+    const validationError = validatePassword(password)
+    if (validationError) { toast.error(validationError); return }
     setLoading(true)
     const { error } = await supabase.auth.signUp({
       email,
@@ -142,14 +224,11 @@ export default function Auth() {
   if (view === 'forgot') {
     return (
       <div className="min-h-screen flex">
-        {/* Left — form */}
         <div className="flex flex-col w-full md:w-[40%] min-h-screen bg-white px-8 py-10 justify-center">
-          {/* Mobile logo */}
           <div className="flex justify-center mb-8 md:hidden">
             <img src="/cf1.png" alt="CifraPro" className="h-8 w-auto" />
           </div>
 
-          {/* Desktop logo top-left */}
           <div className="hidden md:block mb-10">
             <img src="/cf1.png" alt="CifraPro" className="h-7 w-auto" />
           </div>
@@ -229,14 +308,11 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left — form panel */}
       <div className="flex flex-col w-full md:w-[40%] min-h-screen bg-white px-8 py-10">
-        {/* Mobile: logo centered */}
         <div className="flex justify-center mb-8 md:hidden">
           <img src="/cf1.png" alt="CifraPro" className="h-8 w-auto" />
         </div>
 
-        {/* Desktop: logo top-left */}
         <div className="hidden md:block mb-10">
           <img src="/cf1.png" alt="CifraPro" className="h-7 w-auto" />
         </div>
@@ -276,7 +352,6 @@ export default function Auth() {
                 </p>
               </div>
 
-              {/* Tab pills */}
               <div
                 className="flex p-1 rounded-xl mb-7"
                 style={{ backgroundColor: '#F5F7FA', border: '1.5px solid #E2E8F0' }}
@@ -356,13 +431,22 @@ export default function Auth() {
                     </div>
                   </div>
 
+                  {isLockedOut && (
+                    <div
+                      className="rounded-xl px-4 py-3 text-sm font-medium text-center"
+                      style={{ backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', color: '#EF4444' }}
+                    >
+                      Muitas tentativas. Aguarde {countdown}s.
+                    </div>
+                  )}
+
                   <button
                     type="submit"
-                    disabled={loading}
+                    disabled={loading || isLockedOut}
                     className="w-full py-3 rounded-xl font-semibold text-sm text-white mt-2 transition-opacity hover:opacity-90 disabled:opacity-60"
                     style={{ backgroundColor: '#1B98E0' }}
                   >
-                    {loading ? 'Entrando...' : 'Entrar'}
+                    {isLockedOut ? `Bloqueado (${countdown}s)` : loading ? 'Entrando...' : 'Entrar'}
                   </button>
                 </form>
               ) : (
@@ -413,6 +497,10 @@ export default function Auth() {
                         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
+                    <PasswordStrengthIndicator password={password} />
+                    <p className="text-xs" style={{ color: '#A0AEC0' }}>
+                      Mín. 8 caracteres, 1 maiúscula e 1 número
+                    </p>
                   </div>
 
                   <div className="space-y-1.5">
@@ -454,7 +542,6 @@ export default function Auth() {
                 </form>
               )}
 
-              {/* Separator */}
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t" style={{ borderColor: '#E2E8F0' }} />
@@ -469,7 +556,6 @@ export default function Auth() {
                 </div>
               </div>
 
-              {/* Google button */}
               <button
                 onClick={handleGoogle}
                 type="button"
@@ -488,7 +574,6 @@ export default function Auth() {
         </div>
       </div>
 
-      {/* Right panel — hidden on mobile */}
       <RightPanel />
     </div>
   )

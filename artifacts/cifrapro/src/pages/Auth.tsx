@@ -140,6 +140,7 @@ export default function Auth() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const captchaRef = useRef<HCaptcha>(null)
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const [captchaError, setCaptchaError] = useState(false)
 
   useEffect(() => {
     if (lockoutUntil === null) return
@@ -161,16 +162,48 @@ export default function Auth() {
     return () => { if (timerRef.current) clearInterval(timerRef.current) }
   }, [lockoutUntil])
 
+  // Reset captcha state whenever the user switches between Login and Cadastro tabs
+  useEffect(() => {
+    captchaRef.current?.resetCaptcha()
+    setCaptchaToken(null)
+    setCaptchaError(false)
+  }, [tab])
+
   const isLockedOut = lockoutUntil !== null && Date.now() < lockoutUntil
+
+  function handleCaptchaVerify(token: string) {
+    setCaptchaToken(token)
+    setCaptchaError(false)
+  }
+
+  function handleCaptchaExpire() {
+    setCaptchaToken(null)
+    toast.error('O captcha expirou. Resolva novamente antes de continuar.')
+  }
+
+  function handleCaptchaError() {
+    setCaptchaToken(null)
+    setCaptchaError(true)
+    toast.error('Erro ao carregar o captcha. Verifique sua conexão e tente novamente.')
+  }
+
+  function handleCaptchaChalExpired() {
+    setCaptchaToken(null)
+    toast.error('Desafio do captcha expirou. Resolva novamente.')
+  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     if (!email || !password || isLockedOut) return
+    if (!captchaToken) {
+      toast.error('Por favor, resolva o captcha antes de continuar.')
+      return
+    }
     setLoading(true)
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
-      options: { captchaToken: captchaToken ?? undefined }
+      options: { captchaToken }
     })
     captchaRef.current?.resetCaptcha()
     setCaptchaToken(null)
@@ -201,13 +234,17 @@ export default function Auth() {
     if (password !== confirmPassword) { toast.error('As senhas não coincidem'); return }
     const validationError = validatePassword(password)
     if (validationError) { toast.error(validationError); return }
+    if (!captchaToken) {
+      toast.error('Por favor, resolva o captcha antes de continuar.')
+      return
+    }
     setLoading(true)
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        captchaToken: captchaToken ?? undefined
+        captchaToken
       }
     })
     captchaRef.current?.resetCaptcha()
@@ -464,18 +501,27 @@ export default function Auth() {
                     </div>
                   )}
 
-                  <HCaptcha
-                    sitekey="ea2cf4e2-a202-4776-a410-7914672c6c98"
-                    onVerify={(token) => setCaptchaToken(token)}
-                    onExpire={() => setCaptchaToken(null)}
-                    ref={captchaRef}
-                    theme="dark"
-                    size="invisible"
-                  />
+                  <div className="flex flex-col items-center gap-2">
+                    <HCaptcha
+                      sitekey="ea2cf4e2-a202-4776-a410-7914672c6c98"
+                      onVerify={handleCaptchaVerify}
+                      onExpire={handleCaptchaExpire}
+                      onError={handleCaptchaError}
+                      onChalExpired={handleCaptchaChalExpired}
+                      ref={captchaRef}
+                      theme="light"
+                      size="compact"
+                    />
+                    {captchaError && (
+                      <p className="text-xs text-center" style={{ color: '#EF4444' }}>
+                        Não foi possível carregar o captcha. Verifique sua conexão.
+                      </p>
+                    )}
+                  </div>
 
                   <button
                     type="submit"
-                    disabled={loading || isLockedOut}
+                    disabled={loading || isLockedOut || !captchaToken}
                     className="w-full py-3 rounded-xl font-semibold text-sm text-white mt-2 transition-opacity hover:opacity-90 disabled:opacity-60"
                     style={{ backgroundColor: '#1B98E0' }}
                   >
@@ -564,18 +610,27 @@ export default function Auth() {
                     </div>
                   </div>
 
-                  <HCaptcha
-                    sitekey="ea2cf4e2-a202-4776-a410-7914672c6c98"
-                    onVerify={(token) => setCaptchaToken(token)}
-                    onExpire={() => setCaptchaToken(null)}
-                    ref={captchaRef}
-                    theme="dark"
-                    size="invisible"
-                  />
+                  <div className="flex flex-col items-center gap-2">
+                    <HCaptcha
+                      sitekey="ea2cf4e2-a202-4776-a410-7914672c6c98"
+                      onVerify={handleCaptchaVerify}
+                      onExpire={handleCaptchaExpire}
+                      onError={handleCaptchaError}
+                      onChalExpired={handleCaptchaChalExpired}
+                      ref={captchaRef}
+                      theme="light"
+                      size="compact"
+                    />
+                    {captchaError && (
+                      <p className="text-xs text-center" style={{ color: '#EF4444' }}>
+                        Não foi possível carregar o captcha. Verifique sua conexão.
+                      </p>
+                    )}
+                  </div>
 
                   <button
                     type="submit"
-                    disabled={loading}
+                    disabled={loading || !captchaToken}
                     className="w-full py-3 rounded-xl font-semibold text-sm text-white mt-2 transition-opacity hover:opacity-90 disabled:opacity-60"
                     style={{ backgroundColor: '#1B98E0' }}
                   >

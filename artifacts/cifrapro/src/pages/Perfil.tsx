@@ -179,9 +179,15 @@ export default function Perfil() {
   const handleDeleteAccount = async () => {
     if (deleteConfirmText !== 'EXCLUIR CONTA') return;
     setDeletingAccount(true);
-    resetAllData();
-    await supabase.auth.signOut();
-    toast.success("Conta encerrada. Seus dados locais foram removidos.");
+    try {
+      const { error } = await supabase.functions.invoke('delete-user')
+      if (error) throw error
+      resetAllData();
+      await supabase.auth.signOut();
+      toast.success("Conta excluída com sucesso.");
+    } catch {
+      toast.error('Erro ao excluir conta. Tente novamente.');
+    }
     setDeletingAccount(false);
     setDeleteAccountOpen(false);
   };
@@ -498,7 +504,7 @@ export default function Perfil() {
                 </div>
                 <div className="text-left">
                   <div className="text-sm font-medium text-red-400">Excluir conta</div>
-                  <div className="text-xs text-muted-foreground">Encerra sua sessão e apaga dados locais</div>
+                  <div className="text-xs text-muted-foreground">Apaga permanentemente sua conta do servidor</div>
                 </div>
               </button>
             )}
@@ -603,7 +609,7 @@ export default function Perfil() {
       >
         <div className="space-y-4 pb-2">
           <p className="text-muted-foreground">
-            Esta ação encerrará sua sessão e apagará todos os dados locais. Esta ação não pode ser desfeita.
+            Sua conta será <strong>permanentemente excluída</strong> do servidor — cifras, hinários e perfil serão removidos. Esta ação não pode ser desfeita.
           </p>
           <div className="space-y-1.5">
             <Label className="text-foreground">

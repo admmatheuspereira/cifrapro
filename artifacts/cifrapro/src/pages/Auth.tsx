@@ -182,11 +182,12 @@ export default function Auth() {
         toast.error('Muitas tentativas. Aguarde 1 minuto.')
       } else {
         setFailedAttempts(newAttempts)
-        toast.error(
-          error.message === 'Invalid login credentials'
-            ? 'Email ou senha incorretos'
-            : error.message
-        )
+        if (error.message === 'Invalid login credentials') {
+          toast.error('Email ou senha incorretos. Não tem conta? Crie uma abaixo.')
+          setTab('cadastro')
+        } else {
+          toast.error(error.message)
+        }
       }
     } else {
       setFailedAttempts(0)

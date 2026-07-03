@@ -503,7 +503,7 @@ export default function Auth() {
 
                   <div className="flex flex-col items-center gap-2">
                     <HCaptcha
-                      sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY}
+                      sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY ?? 'ea2cf4e2-a202-4776-a410-7914672c6c98'}
                       onVerify={handleCaptchaVerify}
                       onExpire={handleCaptchaExpire}
                       onError={handleCaptchaError}
@@ -612,7 +612,7 @@ export default function Auth() {
 
                   <div className="flex flex-col items-center gap-2">
                     <HCaptcha
-                      sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY}
+                      sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY ?? 'ea2cf4e2-a202-4776-a410-7914672c6c98'}
                       onVerify={handleCaptchaVerify}
                       onExpire={handleCaptchaExpire}
                       onError={handleCaptchaError}

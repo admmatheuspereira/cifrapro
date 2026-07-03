@@ -183,8 +183,7 @@ export default function Auth() {
       } else {
         setFailedAttempts(newAttempts)
         if (error.message === 'Invalid login credentials') {
-          toast.error('Email ou senha incorretos. Não tem conta? Crie uma abaixo.')
-          setTab('cadastro')
+          toast.error('Email ou senha incorretos.')
         } else {
           toast.error(error.message)
         }
@@ -213,7 +212,17 @@ export default function Auth() {
     })
     captchaRef.current?.resetCaptcha()
     setCaptchaToken(null)
-    if (error) { toast.error(error.message) } else { setRegistered(true) }
+    if (error) {
+      if (error.message.includes('already registered') ||
+          error.message.includes('User already registered')) {
+        toast.error('Este email já possui uma conta. Faça login.')
+        setTab('login')
+      } else {
+        toast.error(error.message)
+      }
+    } else {
+      setRegistered(true)
+    }
     setLoading(false)
   }
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "wouter";
 import {
   User, Download, Upload, Share2, Save, Camera, Sun, Moon,
   AlertTriangle, Trash2, LogOut, Lock, Bell, Shield, Info,
@@ -31,6 +32,7 @@ function Toggle({ enabled, onChange }: { enabled: boolean; onChange: (v: boolean
 }
 
 export default function Perfil() {
+  const [, setLocation] = useLocation();
   const { profile, updateProfile, cifras, hinarios, importData, resetAllData } = useAppStore();
   const { user: authUser, loading: authLoading } = useAuth();
   const [user, setUser] = useState(authUser);
@@ -180,12 +182,35 @@ export default function Perfil() {
     if (deleteConfirmText !== 'EXCLUIR CONTA') return;
     setDeletingAccount(true);
     try {
-      const { error } = await supabase.functions.invoke('delete-user')
-      if (error) throw error
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        toast.error('Sessão expirada. Faça login novamente.')
+        setLocation('/auth')
+        return
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text)
+      }
+
       resetAllData();
       await supabase.auth.signOut();
-      toast.success("Conta excluída com sucesso.");
-    } catch {
+      toast.success('Conta excluída com sucesso');
+      setLocation('/auth');
+    } catch (err) {
+      console.error(err)
       toast.error('Erro ao excluir conta. Tente novamente.');
     }
     setDeletingAccount(false);

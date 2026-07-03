@@ -7,6 +7,12 @@ import HCaptcha from '@hcaptcha/react-hcaptcha'
 type Tab = 'login' | 'cadastro'
 type View = 'auth' | 'forgot'
 
+const HCAPTCHA_SITE_KEY = import.meta.env.VITE_HCAPTCHA_SITE_KEY
+
+if (!HCAPTCHA_SITE_KEY && import.meta.env.DEV) {
+  console.error('[Auth] VITE_HCAPTCHA_SITE_KEY não está definida. O captcha vai falhar.')
+}
+
 function getPasswordStrength(password: string): { level: 'fraca' | 'média' | 'forte'; score: number } {
   if (!password) return { level: 'fraca', score: 0 }
   let score = 0
@@ -192,6 +198,25 @@ export default function Auth() {
     toast.error('Desafio do captcha expirou. Resolva novamente.')
   }
 
+  async function checkEmailExists(emailToCheck: string): Promise<boolean | null> {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/check-email-exists`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: emailToCheck }),
+        }
+      )
+      if (!res.ok) return null
+      const data = await res.json()
+      if (data.exists === null || data.exists === undefined) return null
+      return data.exists as boolean
+    } catch {
+      return null
+    }
+  }
+
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     if (!email || !password || isLockedOut) return
@@ -216,7 +241,23 @@ export default function Auth() {
       } else {
         setFailedAttempts(newAttempts)
         if (error.message === 'Invalid login credentials') {
-          toast.error('Email ou senha incorretos.')
+          // Probe whether the email is registered to give a precise message
+          const exists = await checkEmailExists(email)
+          if (exists === false) {
+            toast.error(
+              'Não existe uma conta cadastrada com esse e-mail. Crie uma nova conta para continuar.',
+              {
+                action: {
+                  label: 'Criar conta',
+                  onClick: () => setTab('cadastro'),
+                },
+                duration: 6000,
+              }
+            )
+          } else {
+            // exists === true or null (probe failed) → generic message
+            toast.error('E-mail ou senha incorretos.')
+          }
         } else {
           toast.error(error.message)
         }
@@ -502,16 +543,22 @@ export default function Auth() {
                   )}
 
                   <div className="flex flex-col items-center gap-2">
-                    <HCaptcha
-                      sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY ?? 'ea2cf4e2-a202-4776-a410-7914672c6c98'}
-                      onVerify={handleCaptchaVerify}
-                      onExpire={handleCaptchaExpire}
-                      onError={handleCaptchaError}
-                      onChalExpired={handleCaptchaChalExpired}
-                      ref={captchaRef}
-                      theme="light"
-                      size="compact"
-                    />
+                    {HCAPTCHA_SITE_KEY ? (
+                      <HCaptcha
+                        sitekey={HCAPTCHA_SITE_KEY}
+                        onVerify={handleCaptchaVerify}
+                        onExpire={handleCaptchaExpire}
+                        onError={handleCaptchaError}
+                        onChalExpired={handleCaptchaChalExpired}
+                        ref={captchaRef}
+                        theme="light"
+                        size="compact"
+                      />
+                    ) : (
+                      <p className="text-xs text-center" style={{ color: '#EF4444' }}>
+                        Captcha indisponível no momento. Tente novamente mais tarde.
+                      </p>
+                    )}
                     {captchaError && (
                       <p className="text-xs text-center" style={{ color: '#EF4444' }}>
                         Não foi possível carregar o captcha. Verifique sua conexão.
@@ -611,16 +658,22 @@ export default function Auth() {
                   </div>
 
                   <div className="flex flex-col items-center gap-2">
-                    <HCaptcha
-                      sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY ?? 'ea2cf4e2-a202-4776-a410-7914672c6c98'}
-                      onVerify={handleCaptchaVerify}
-                      onExpire={handleCaptchaExpire}
-                      onError={handleCaptchaError}
-                      onChalExpired={handleCaptchaChalExpired}
-                      ref={captchaRef}
-                      theme="light"
-                      size="compact"
-                    />
+                    {HCAPTCHA_SITE_KEY ? (
+                      <HCaptcha
+                        sitekey={HCAPTCHA_SITE_KEY}
+                        onVerify={handleCaptchaVerify}
+                        onExpire={handleCaptchaExpire}
+                        onError={handleCaptchaError}
+                        onChalExpired={handleCaptchaChalExpired}
+                        ref={captchaRef}
+                        theme="light"
+                        size="compact"
+                      />
+                    ) : (
+                      <p className="text-xs text-center" style={{ color: '#EF4444' }}>
+                        Captcha indisponível no momento. Tente novamente mais tarde.
+                      </p>
+                    )}
                     {captchaError && (
                       <p className="text-xs text-center" style={{ color: '#EF4444' }}>
                         Não foi possível carregar o captcha. Verifique sua conexão.

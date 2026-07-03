@@ -85,3 +85,4 @@ VITE_SUPABASE_ANON_KEY = "sb_publishable_qKygDMpJr6mrNbFsUFtWtA_EMI-Kz2s"
 
 [nix]
 channel = "stable-25_05"
+packages = ["supabase-cli"]

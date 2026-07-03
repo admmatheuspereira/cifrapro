@@ -82,7 +82,7 @@ externalPort = 3000
 [userenv.shared]
 VITE_SUPABASE_URL = "https://nsxstldxphxifkpkxzag.supabase.co"
 VITE_SUPABASE_ANON_KEY = "sb_publishable_qKygDMpJr6mrNbFsUFtWtA_EMI-Kz2s"
-VITE_HCAPTCHA_SITE_KEY = "10000000-ffff-ffff-ffff-000000000001"
+VITE_HCAPTCHA_SITE_KEY = "ea2cf4e2-a202-4776-a410-7914672c6c98"
 
 [nix]
 channel = "stable-25_05"

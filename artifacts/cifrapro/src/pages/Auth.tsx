@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, Music } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { toast } from 'sonner'
+import HCaptcha from '@hcaptcha/react-hcaptcha'
 
 type Tab = 'login' | 'cadastro'
 type View = 'auth' | 'forgot'
@@ -137,6 +138,8 @@ export default function Auth() {
   const [lockoutUntil, setLockoutUntil] = useState<number | null>(null)
   const [countdown, setCountdown] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const captchaRef = useRef<HCaptcha>(null)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
 
   useEffect(() => {
     if (lockoutUntil === null) return
@@ -164,7 +167,13 @@ export default function Auth() {
     e.preventDefault()
     if (!email || !password || isLockedOut) return
     setLoading(true)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: { captchaToken: captchaToken ?? undefined }
+    })
+    captchaRef.current?.resetCaptcha()
+    setCaptchaToken(null)
     if (error) {
       const newAttempts = failedAttempts + 1
       if (newAttempts >= MAX_ATTEMPTS) {
@@ -196,8 +205,13 @@ export default function Auth() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: window.location.origin }
+      options: {
+        emailRedirectTo: window.location.origin,
+        captchaToken: captchaToken ?? undefined
+      }
     })
+    captchaRef.current?.resetCaptcha()
+    setCaptchaToken(null)
     if (error) { toast.error(error.message) } else { setRegistered(true) }
     setLoading(false)
   }
@@ -440,6 +454,15 @@ export default function Auth() {
                     </div>
                   )}
 
+                  <HCaptcha
+                    sitekey="ea2cf4e2-a202-4776-a410-7914672c6c98"
+                    onVerify={(token) => setCaptchaToken(token)}
+                    onExpire={() => setCaptchaToken(null)}
+                    ref={captchaRef}
+                    theme="dark"
+                    size="invisible"
+                  />
+
                   <button
                     type="submit"
                     disabled={loading || isLockedOut}
@@ -530,6 +553,15 @@ export default function Auth() {
                       </button>
                     </div>
                   </div>
+
+                  <HCaptcha
+                    sitekey="ea2cf4e2-a202-4776-a410-7914672c6c98"
+                    onVerify={(token) => setCaptchaToken(token)}
+                    onExpire={() => setCaptchaToken(null)}
+                    ref={captchaRef}
+                    theme="dark"
+                    size="invisible"
+                  />
 
                   <button
                     type="submit"

@@ -1,0 +1,130 @@
+quero manter o captcha
+
+Então vamos integrar o hCaptcha. Manda esse prompt no Replit:
+
+Integrar hCaptcha no formulário de login/cadastro.
+
+O Supabase usa hCaptcha (não reCAPTCHA). Siga esses passos:
+
+Instale a dependência:
+npm install @hcaptcha/react-hcaptcha
+No arquivo src/pages/Auth.tsx, adicione:
+tsx
+import HCaptcha from '@hcaptcha/react-hcaptcha'
+import { useRef } from 'react'
+
+// Dentro do componente, adicione:
+const captchaRef = useRef<HCaptcha>(null)
+const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+
+// Adicione o componente antes do botão Entrar:
+<HCaptcha
+  sitekey="SEU_SITEKEY_AQUI"
+  onVerify={(token) => setCaptchaToken(token)}
+  onExpire={() => setCaptchaToken(null)}
+  ref={captchaRef}
+  theme="dark"
+/>
+
+// No handleLogin e handleCadastro, passe o token ao Supabase:
+const { error } = await supabase.auth.signInWithPassword({
+  email,
+  password,
+  options: { captchaToken: captchaToken ?? undefined }
+})
+
+// Após login/cadastro, reseta o captcha:
+captchaRef.current?.resetCaptcha()
+setCaptchaToken(null)
+Antes de rodar esse prompt, você precisa do sitekey do hCaptcha:
+
+Acessa hcaptcha.com → cria conta gratuita
+Sites → Add Site → coloca cifrapro.vercel.app
+Copia o Sitekey
+E no Supabase:
+
+Authentication → Settings → CAPTCHA → cola o Secret Key do hCaptcha
+Me manda o sitekey quando tiver e eu ajusto o prompt com o valor correto.
+
+1783087146812_{8C8344D2-C568-451A-A766-76FFC028C2A9}.png
+?
+
+Você está na tela de configuração do hCaptcha. Seleciona 99.9% Passive (já está selecionado) — é o melhor modo, só aparece desafio para usuários suspeitos.
+
+Agora preciso do Sitekey. Nessa mesma página do hCaptcha:
+
+Vai em Sites no menu lateral
+Clica no site que você criou (ou cria um novo com cifrapro.vercel.app)
+Copia o Sitekey que aparece (formato: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
+Me manda o sitekey que eu monto o prompt completo pra você.
+
+1783087184889_{7E135260-FD52-406A-9EF2-6C8C883D8D4F}.png
+Perfeito! Sitekey encontrado: ea2cf4e2-a202-4776-a410-7914672c6c98
+
+Agora precisa do Secret Key. Na mesma página do hCaptcha:
+
+Clica no site cifrapro
+Procura Secret Key (ou vai em Settings → Secret Key)
+Copia ela
+Depois cola o Secret Key no Supabase:
+
+Authentication → Settings → CAPTCHA → Secret Key
+Me manda o secret key que eu monto o prompt completo para o Replit.
+
+Generate a Secret ES_7534dea54b534845b1ccfe72696a1348
+
+Ótimo, tem o Secret Key.
+
+Agora cola ele no Supabase:
+
+supabase.com → seu projeto
+Authentication → Settings
+Procura CAPTCHA → campo Secret Key
+Cola: ES_7534dea54b534845b1ccfe72696a1348
+Salva
+Depois manda esse prompt no Replit:
+
+Integrar hCaptcha no formulário de login/cadastro.
+
+1. Instale:
+
+npm install @hcaptcha/react-hcaptcha
+2. No arquivo src/pages/Auth.tsx, faça as seguintes alterações:
+
+tsx
+// Adicione nos imports:
+import HCaptcha from '@hcaptcha/react-hcaptcha'
+import { useRef } from 'react'
+
+// Dentro do componente, adicione esses estados:
+const captchaRef = useRef<HCaptcha>(null)
+const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+
+// Adicione o componente hCaptcha antes do botão "Entrar":
+<HCaptcha
+  sitekey="ea2cf4e2-a202-4776-a410-7914672c6c98"
+  onVerify={(token) => setCaptchaToken(token)}
+  onExpire={() => setCaptchaToken(null)}
+  ref={captchaRef}
+  theme="dark"
+  size="invisible"
+/>
+
+// No handleLogin, passe o token:
+const { error } = await supabase.auth.signInWithPassword({
+  email,
+  password,
+  options: { captchaToken: captchaToken ?? undefined }
+})
+captchaRef.current?.resetCaptcha()
+setCaptchaToken(null)
+
+// No handleCadastro, passe o token:
+const { error } = await supabase.auth.signUp({
+  email,
+  password,
+  options: { captchaToken: captchaToken ?? undefined }
+})
+captchaRef.current?.resetCaptcha()
+setCaptchaToken(null)
+Como o modo é 99.9% Passive, o captcha é invisível — não aparece nenhum widget visual para o usuário, só valida em background.

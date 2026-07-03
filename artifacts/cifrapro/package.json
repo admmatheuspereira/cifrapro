@@ -76,6 +76,7 @@
     "zod": "catalog:"
   },
   "dependencies": {
+    "@hcaptcha/react-hcaptcha": "^2.0.2",
     "@supabase/supabase-js": "^2.108.2",
     "zustand": "^5.0.13"
   }

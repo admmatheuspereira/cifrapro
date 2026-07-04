@@ -26,15 +26,15 @@ export default function Home() {
         <p className="text-muted-foreground">Olá, {displayName}</p>
       </header>
 
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <div className="bg-card border border-border rounded-xl p-4 flex flex-col justify-between">
+      <div className="grid grid-cols-2 gap-5 mb-8">
+        <div className="bg-card border border-border rounded-xl p-5 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
             <span className="text-muted-foreground text-sm font-medium">Cifras</span>
             <Music size={18} className="text-primary" />
           </div>
           <span className="text-3xl font-bold">{cifras.length}</span>
         </div>
-        <div className="bg-card border border-border rounded-xl p-4 flex flex-col justify-between">
+        <div className="bg-card border border-border rounded-xl p-5 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
             <span className="text-muted-foreground text-sm font-medium">Hinários</span>
             <BookOpen size={18} className="text-primary" />

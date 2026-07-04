@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import {
   User, Download, Upload, Share2, Save, Camera, Sun, Moon,
   AlertTriangle, Trash2, LogOut, Lock, Bell, Shield, Info,
@@ -185,6 +185,8 @@ export default function Perfil() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
         toast.error('Sessão expirada. Faça login novamente.')
+        setDeletingAccount(false);
+        setDeleteAccountOpen(false);
         setLocation('/auth')
         return
       }
@@ -205,6 +207,9 @@ export default function Perfil() {
         throw new Error(text)
       }
 
+      // Reset state before navigation to avoid updating unmounted component
+      setDeletingAccount(false);
+      setDeleteAccountOpen(false);
       resetAllData();
       await supabase.auth.signOut();
       toast.success('Conta excluída com sucesso');
@@ -212,9 +217,9 @@ export default function Perfil() {
     } catch (err) {
       console.error(err)
       toast.error('Erro ao excluir conta. Tente novamente.');
+      setDeletingAccount(false);
+      setDeleteAccountOpen(false);
     }
-    setDeletingAccount(false);
-    setDeleteAccountOpen(false);
   };
 
   const handleExportData = () => {
@@ -486,15 +491,15 @@ export default function Perfil() {
               <span className="text-sm font-medium text-foreground">1.0.0</span>
             </div>
             <div className="h-px bg-border" />
-            <a href="/termos" className="flex items-center justify-between">
+            <Link href="/termos" className="flex items-center justify-between">
               <span className="text-sm text-foreground">Termos de uso</span>
               <ExternalLink size={14} className="text-muted-foreground" />
-            </a>
+            </Link>
             <div className="h-px bg-border" />
-            <a href="/privacidade" className="flex items-center justify-between">
+            <Link href="/privacidade" className="flex items-center justify-between">
               <span className="text-sm text-foreground">Política de privacidade</span>
               <ExternalLink size={14} className="text-muted-foreground" />
-            </a>
+            </Link>
           </div>
         </section>
 

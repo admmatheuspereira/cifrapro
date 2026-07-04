@@ -7,7 +7,11 @@ import HCaptcha from '@hcaptcha/react-hcaptcha'
 type Tab = 'login' | 'cadastro'
 type View = 'auth' | 'forgot'
 
-const HCAPTCHA_SITE_KEY = import.meta.env.VITE_HCAPTCHA_SITE_KEY
+const HCAPTCHA_SITE_KEY =
+  import.meta.env.VITE_HCAPTCHA_SITE_KEY ?? 'ea2cf4e2-a202-4776-a410-7914672c6c98'
+
+/** Base path sem trailing slash, e.g. "" em localhost, "/cifrapro" em subpath */
+const APP_BASE = import.meta.env.BASE_URL.replace(/\/$/, '')
 
 if (!HCAPTCHA_SITE_KEY && import.meta.env.DEV) {
   console.error('[Auth] VITE_HCAPTCHA_SITE_KEY não está definida. O captcha vai falhar.')
@@ -284,9 +288,9 @@ export default function Auth() {
       email,
       password,
       options: {
-        emailRedirectTo: window.location.origin,
-        captchaToken
-      }
+        emailRedirectTo: `${window.location.origin}${APP_BASE}`,
+        captchaToken,
+      },
     })
     captchaRef.current?.resetCaptcha()
     setCaptchaToken(null)
@@ -307,7 +311,7 @@ export default function Auth() {
   async function handleGoogle() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` }
+      options: { redirectTo: `${window.location.origin}${APP_BASE}/auth/callback` },
     })
     if (error) toast.error(error.message)
   }
@@ -317,7 +321,7 @@ export default function Auth() {
     if (!recoveryEmail) return
     setLoading(true)
     const { error } = await supabase.auth.resetPasswordForEmail(recoveryEmail, {
-      redirectTo: `${window.location.origin}/reset-password`
+      redirectTo: `${window.location.origin}${APP_BASE}/reset-password`,
     })
     if (error) { toast.error(error.message) } else { setRecoverySent(true) }
     setLoading(false)

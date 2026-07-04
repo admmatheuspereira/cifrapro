@@ -20,6 +20,8 @@ import Perfil from "./pages/Perfil";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import ResetPassword from "./pages/ResetPassword";
+import Termos from "./pages/Termos";
+import Privacidade from "./pages/Privacidade";
 import NotFound from "./pages/not-found";
 
 const queryClient = new QueryClient();
@@ -71,7 +73,14 @@ function AppRouter() {
   const { user, loading } = useAuth();
   const [location] = useLocation();
 
-  if (loading && location !== '/auth' && location !== '/reset-password' && location !== '/auth/callback') {
+  if (
+    loading &&
+    location !== '/auth' &&
+    location !== '/reset-password' &&
+    location !== '/auth/callback' &&
+    location !== '/termos' &&
+    location !== '/privacidade'
+  ) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
@@ -90,6 +99,9 @@ function AppRouter() {
       <Route path="/reset-password">
         <ResetPassword />
       </Route>
+
+      <Route path="/termos" component={Termos} />
+      <Route path="/privacidade" component={Privacidade} />
 
       <Route>
         {!user && !loading ? (

@@ -66,7 +66,7 @@ export default function Home() {
             </Link>
           </div>
         ) : (
-          <div className="space-y-3 pb-24">
+          <div className="space-y-3 pb-40 md:pb-8">
             {recentCifras.map(cifra => (
               <Link key={cifra.id} href={`/cifras/${cifra.id}`}>
                 <div className="bg-card hover:bg-card/80 border border-border rounded-xl p-4 flex items-center justify-between cursor-pointer transition-colors" data-testid={`card-recent-cifra-${cifra.id}`}>

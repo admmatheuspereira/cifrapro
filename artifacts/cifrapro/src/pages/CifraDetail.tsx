@@ -184,64 +184,62 @@ export default function CifraDetail() {
         </div>
 
         {/* Row 2: Musical Controls */}
-        <div className="flex flex-row flex-wrap gap-2 px-3 pb-2.5 items-center justify-between">
+        <div className="flex flex-nowrap gap-1.5 px-3 pb-2.5 items-center overflow-x-auto">
 
-          <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
-            {/* Transpose Controls */}
-            <div className="flex items-center gap-1.5 bg-muted/50 rounded-lg p-1">
-              <div className="px-2 flex items-center justify-center min-w-[52px] font-medium text-primary text-sm">
-                {currentKey || '?'}
-                {semitones !== 0 && (
-                  <span className="text-xs text-muted-foreground ml-1">
-                    ({semitones > 0 ? '+' : ''}{semitones})
-                  </span>
-                )}
-              </div>
-              <div className="w-px h-5 bg-border" />
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSemitones(s => s - 1)} data-testid="button-transpose-down">
-                <ArrowDown size={14} />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSemitones(s => s + 1)} data-testid="button-transpose-up">
-                <ArrowUp size={14} />
-              </Button>
-              <div className="w-px h-5 bg-border" />
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSemitones(0)} disabled={semitones === 0} data-testid="button-transpose-reset">
-                <RotateCcw size={13} />
-              </Button>
+          {/* Transpose Controls */}
+          <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1 shrink-0">
+            <div className="px-1.5 flex items-center justify-center min-w-[36px] font-medium text-primary text-sm">
+              {currentKey || '?'}
+              {semitones !== 0 && (
+                <span className="hidden sm:inline text-xs text-muted-foreground ml-1">
+                  ({semitones > 0 ? '+' : ''}{semitones})
+                </span>
+              )}
             </div>
+            <div className="w-px h-5 bg-border" />
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSemitones(s => s - 1)} data-testid="button-transpose-down">
+              <ArrowDown size={14} />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSemitones(s => s + 1)} data-testid="button-transpose-up">
+              <ArrowUp size={14} />
+            </Button>
+            <div className="w-px h-5 bg-border" />
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSemitones(0)} disabled={semitones === 0} data-testid="button-transpose-reset">
+              <RotateCcw size={13} />
+            </Button>
+          </div>
 
-            {/* Font Size Controls */}
-            <div className="flex items-center gap-1.5 bg-muted/50 rounded-lg p-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={decreaseFontScale}
-                disabled={fontScale <= FONT_SCALE_MIN}
-                aria-label="Diminuir fonte"
-                data-testid="button-font-decrease"
-              >
-                <Minus size={14} />
-              </Button>
-              <span className="px-1 text-sm font-semibold select-none" aria-hidden="true">A</span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={increaseFontScale}
-                disabled={fontScale >= FONT_SCALE_MAX}
-                aria-label="Aumentar fonte"
-                data-testid="button-font-increase"
-              >
-                <Plus size={14} />
-              </Button>
-            </div>
+          {/* Font Size Controls */}
+          <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1 shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={decreaseFontScale}
+              disabled={fontScale <= FONT_SCALE_MIN}
+              aria-label="Diminuir fonte"
+              data-testid="button-font-decrease"
+            >
+              <Minus size={14} />
+            </Button>
+            <span className="px-0.5 text-sm font-semibold select-none" aria-hidden="true">A</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={increaseFontScale}
+              disabled={fontScale >= FONT_SCALE_MAX}
+              aria-label="Aumentar fonte"
+              data-testid="button-font-increase"
+            >
+              <Plus size={14} />
+            </Button>
           </div>
 
           {/* Auto-scroll Toggle */}
           <Button
             variant={scrollActive ? "default" : "secondary"}
-            className="h-7 px-3 text-xs font-medium shrink-0"
+            className="h-7 px-2.5 text-xs font-medium shrink-0 ml-auto"
             onClick={() => {
               if (scrollActive) {
                 setScrollActive(false);

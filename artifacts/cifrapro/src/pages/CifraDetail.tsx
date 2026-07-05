@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useLocation } from "wouter";
-import { ArrowLeft, Edit2, Trash2, ArrowUp, ArrowDown, RotateCcw, Play, Pause, X, Turtle, Rabbit } from "lucide-react";
+import { ArrowLeft, Edit2, Trash2, ArrowUp, ArrowDown, RotateCcw, Play, Pause, X, Turtle, Rabbit, Minus, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useAppStore } from "../store/useAppStore";
 import { transposeContent, transposeKey } from "../utils/transpose";
@@ -66,6 +66,23 @@ export default function CifraDetail() {
 
   const [semitones, setSemitones] = useState(0);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // Font size scale (persisted per device — leitura ao vivo precisa lembrar a preferência)
+  const FONT_SCALE_MIN = 0.75;
+  const FONT_SCALE_MAX = 1.75;
+  const FONT_SCALE_STEP = 0.125;
+  const [fontScale, setFontScale] = useState(() => {
+    const saved = typeof window !== "undefined" ? localStorage.getItem("cifrapro:fontScale") : null;
+    const parsed = saved ? parseFloat(saved) : 1;
+    return Number.isFinite(parsed) ? Math.min(FONT_SCALE_MAX, Math.max(FONT_SCALE_MIN, parsed)) : 1;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("cifrapro:fontScale", String(fontScale));
+  }, [fontScale]);
+
+  const increaseFontScale = () => setFontScale(s => Math.min(FONT_SCALE_MAX, +(s + FONT_SCALE_STEP).toFixed(3)));
+  const decreaseFontScale = () => setFontScale(s => Math.max(FONT_SCALE_MIN, +(s - FONT_SCALE_STEP).toFixed(3)));
 
   // Auto-scroll state
   const [scrollActive, setScrollActive] = useState(false);
@@ -167,35 +184,64 @@ export default function CifraDetail() {
         </div>
 
         {/* Row 2: Musical Controls */}
-        <div className="flex flex-row gap-2 px-3 pb-2.5 items-center justify-between">
+        <div className="flex flex-row flex-wrap gap-2 px-3 pb-2.5 items-center justify-between">
 
-          {/* Transpose Controls */}
-          <div className="flex items-center gap-1.5 bg-muted/50 rounded-lg p-1 flex-1">
-            <div className="px-2 flex items-center justify-center min-w-[52px] font-medium text-primary text-sm">
-              {currentKey || '?'}
-              {semitones !== 0 && (
-                <span className="text-xs text-muted-foreground ml-1">
-                  ({semitones > 0 ? '+' : ''}{semitones})
-                </span>
-              )}
+          <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
+            {/* Transpose Controls */}
+            <div className="flex items-center gap-1.5 bg-muted/50 rounded-lg p-1">
+              <div className="px-2 flex items-center justify-center min-w-[52px] font-medium text-primary text-sm">
+                {currentKey || '?'}
+                {semitones !== 0 && (
+                  <span className="text-xs text-muted-foreground ml-1">
+                    ({semitones > 0 ? '+' : ''}{semitones})
+                  </span>
+                )}
+              </div>
+              <div className="w-px h-5 bg-border" />
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSemitones(s => s - 1)} data-testid="button-transpose-down">
+                <ArrowDown size={14} />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSemitones(s => s + 1)} data-testid="button-transpose-up">
+                <ArrowUp size={14} />
+              </Button>
+              <div className="w-px h-5 bg-border" />
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSemitones(0)} disabled={semitones === 0} data-testid="button-transpose-reset">
+                <RotateCcw size={13} />
+              </Button>
             </div>
-            <div className="w-px h-5 bg-border" />
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSemitones(s => s - 1)} data-testid="button-transpose-down">
-              <ArrowDown size={14} />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSemitones(s => s + 1)} data-testid="button-transpose-up">
-              <ArrowUp size={14} />
-            </Button>
-            <div className="w-px h-5 bg-border" />
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSemitones(0)} disabled={semitones === 0} data-testid="button-transpose-reset">
-              <RotateCcw size={13} />
-            </Button>
+
+            {/* Font Size Controls */}
+            <div className="flex items-center gap-1.5 bg-muted/50 rounded-lg p-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={decreaseFontScale}
+                disabled={fontScale <= FONT_SCALE_MIN}
+                aria-label="Diminuir fonte"
+                data-testid="button-font-decrease"
+              >
+                <Minus size={14} />
+              </Button>
+              <span className="px-1 text-sm font-semibold select-none" aria-hidden="true">A</span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={increaseFontScale}
+                disabled={fontScale >= FONT_SCALE_MAX}
+                aria-label="Aumentar fonte"
+                data-testid="button-font-increase"
+              >
+                <Plus size={14} />
+              </Button>
+            </div>
           </div>
 
           {/* Auto-scroll Toggle */}
           <Button
             variant={scrollActive ? "default" : "secondary"}
-            className="h-7 px-3 text-xs font-medium"
+            className="h-7 px-3 text-xs font-medium shrink-0"
             onClick={() => {
               if (scrollActive) {
                 setScrollActive(false);
@@ -227,7 +273,10 @@ export default function CifraDetail() {
             {cifra.artist && <p className="text-lg text-muted-foreground">{cifra.artist}</p>}
           </div>
 
-          <div className="font-mono text-xs sm:text-sm md:text-lg leading-relaxed">
+          <div
+            className="font-mono leading-relaxed"
+            style={{ fontSize: `calc(clamp(0.85rem, 0.72rem + 0.9vw, 1.125rem) * ${fontScale})` }}
+          >
             <CifraContent content={currentContent} />
           </div>
         </div>

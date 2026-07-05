@@ -66,16 +66,18 @@ export default function Home() {
             </Link>
           </div>
         ) : (
-          <div className="space-y-3 pb-40 md:pb-8">
+          <div className="space-y-4 pb-40 md:pb-8">
             {recentCifras.map(cifra => (
               <Link key={cifra.id} href={`/cifras/${cifra.id}`}>
-                <div className="bg-card hover:bg-card/80 border border-border rounded-xl p-4 flex items-center justify-between cursor-pointer transition-colors" data-testid={`card-recent-cifra-${cifra.id}`}>
-                  <div>
+                <div className="bg-card hover:bg-card/80 border border-border rounded-xl px-5 py-4 flex items-center justify-between cursor-pointer transition-colors" data-testid={`card-recent-cifra-${cifra.id}`}>
+                  <div className="min-w-0 mr-3">
                     <h3 className="font-medium text-foreground line-clamp-1">{cifra.title}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-1">{cifra.artist}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">
+                      {cifra.artist || 'Sem artista'}
+                    </p>
                   </div>
                   {cifra.key && (
-                    <div className="bg-primary/20 text-primary px-3 py-1 rounded-full text-sm font-medium shrink-0 ml-3">
+                    <div className="w-9 h-9 rounded-full bg-primary/20 text-primary text-sm font-semibold flex items-center justify-center shrink-0">
                       {cifra.key}
                     </div>
                   )}
